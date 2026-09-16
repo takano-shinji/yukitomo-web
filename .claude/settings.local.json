@@ -20,7 +20,14 @@
       "Bash(python3 -c ' *)",
       "Bash(python3)",
       "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=1\" -H \"App-Version: 11.23.45\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s \"https://stg.yukitomo.link/v2/api-docs?group=yukitomo-api\" -o /private/tmp/claude-501/-Users-takanoshinji-yukitomo-web/8789ab61-285a-4f94-b13b-50783c61baca/scratchpad/live-api.json)",
+      "Bash(curl -s \"https://stg.yukitomo.link/web/searchGroup?limit=3\" -H \"App-Version: 11.23.45\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\")",
+      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\" -H \"Authorization: Bearer test\")",
+      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\" -H \"Authorization: \")"
     ]
   }
 }

@@ -1,4 +1,4 @@
-import type { Group } from "./types";
+import type { Group, GroupSearchModel } from "./types";
 
 const AVATAR_1 = "https://storage.googleapis.com/studio-design-asset-files/projects/EjOQJw1oqJ/s-530x444_webp_7a6415de-8f68-4827-b991-e1c7d37d0f69.webp";
 const AVATAR_2 = "https://storage.googleapis.com/studio-cms-assets/projects/EjOQJw1oqJ/s-1442x1014_v-fms_webp_ab350e5f-62d7-4b7b-8fef-d765db8ff55b_small.webp";
@@ -1949,13 +1949,44 @@ const mockGroups: Group[] = [
   },
 ];
 
-// TODO: Replace with actual API call when backend is ready
-// e.g. const res = await fetch(`${process.env.API_BASE_URL}/groups`);
-
+// TODO: getGroup/getGroups はグループ詳細ページ用。詳細取得API(/group/getGroup)は
+// 認証(Firebaseトークン)が必須のため、認証の仕組みが整うまではモックデータを使用する。
 export async function getGroups(): Promise<Group[]> {
   return mockGroups;
 }
 
 export async function getGroup(id: string): Promise<Group | null> {
   return mockGroups.find((g) => g.groupId === id) ?? null;
+}
+
+const API_BASE_URL = "https://stg.yukitomo.link";
+const APP_VERSION = "11.23.45";
+
+/**
+ * トップページのグループ一覧用。GET /web/searchGroup は認証不要で
+ * 公開グループ(publicFlg=1)を返す実APIエンドポイント。
+ */
+export async function searchGroups(params?: {
+  prefecture?: number;
+  q?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<GroupSearchModel[]> {
+  const query = new URLSearchParams();
+  if (params?.prefecture != null) query.set("prefecture", String(params.prefecture));
+  if (params?.q) query.set("q", params.q);
+  query.set("limit", String(params?.limit ?? 100));
+  query.set("offset", String(params?.offset ?? 0));
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/web/searchGroup?${query.toString()}`, {
+      headers: { "App-Version": APP_VERSION },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data: { groupList: GroupSearchModel[] } = await res.json();
+    return data.groupList;
+  } catch {
+    return [];
+  }
 }

@@ -143,3 +143,27 @@ export type Group = {
   memberList?: GroupMemberModel[];
   scheduleList?: ScheduleModel[];
 };
+
+/** GET /web/searchGroup の nextSchedule（直近のグループスケジュール） */
+export type GroupNextScheduleModel = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  eventName: string;
+  skiAreaId: string;
+  skiAreaName: string;
+  freeSkiAreaName: string;
+};
+
+/** GET /web/searchGroup のレスポンス1件分（一覧用の軽量モデル、認証不要） */
+export type GroupSearchModel = {
+  groupId: string;
+  groupName: string;
+  memberCount: number;
+  prefectures?: number;
+  thumbnailImageId?: string;
+  thumbnailImageUrl?: string;
+  recruitmentFlg?: number;
+  recruitmentMessage?: string;
+  nextSchedule?: GroupNextScheduleModel;
+};

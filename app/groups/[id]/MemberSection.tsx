@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Member } from "@/lib/types";
+import type { GroupMemberModel } from "@/lib/types";
 import AppBadges from "@/app/components/AppBadges";
 
 const INITIAL_LIMIT = 3;
 
-export default function MemberSection({ members, ownerId }: { members: Member[]; ownerId: string }) {
+export default function MemberSection({ members, ownerId }: { members: GroupMemberModel[]; ownerId: string }) {
   const [expanded, setExpanded] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -24,18 +24,18 @@ export default function MemberSection({ members, ownerId }: { members: Member[];
         <div className="flex flex-col gap-3">
           {visible.map((member) => (
             <button
-              key={member.id}
+              key={member.accountId}
               onClick={() => setModalOpen(true)}
               className="flex items-center gap-3 text-left hover:bg-gray-50 rounded-lg p-1 -mx-1 transition-colors"
             >
               <img
-                src={member.iconUrl}
-                alt={member.name}
+                src={member.iconImageUrl}
+                alt={member.nickname}
                 className="w-10 h-10 rounded-full object-cover shrink-0"
               />
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-700">{member.name}</p>
-                {member.id === ownerId && (
+                <p className="text-sm font-medium text-gray-700">{member.nickname}</p>
+                {member.accountId === ownerId && (
                   <span className="text-xs text-white bg-[#1a3060] px-2 py-0.5 rounded-full">
                     オーナー
                   </span>

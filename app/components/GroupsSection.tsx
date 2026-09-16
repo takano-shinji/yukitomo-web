@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import AppBadges from "@/app/components/AppBadges";
-import type { Group } from "@/lib/types";
+import { PREFECTURE_LABEL, type Group } from "@/lib/types";
 
 const TOP_LIMIT = 10;
 
@@ -73,9 +72,14 @@ export default function GroupsSection({ groups, heroBg }: { groups: Group[]; her
   const [selectedLocation, setSelectedLocation] = useState("");
   const [visibleCount, setVisibleCount] = useState(TOP_LIMIT);
   const listRef = useRef<HTMLElement>(null);
+  const [today] = useState(() => Date.now());
+
+  function prefName(group: Group): string {
+    return group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] ?? "" : "";
+  }
 
   const prefectureOrder = REGION_GROUPS.flatMap((r) => r.prefectures);
-  const locations = Array.from(new Set(groups.map((g) => g.location))).sort((a, b) => {
+  const locations = Array.from(new Set(groups.map(prefName))).filter(Boolean).sort((a, b) => {
     const ai = prefectureOrder.indexOf(a);
     const bi = prefectureOrder.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b, "ja");
@@ -85,25 +89,24 @@ export default function GroupsSection({ groups, heroBg }: { groups: Group[]; her
   });
 
   function nearestDate(group: Group): number {
-    if (group.schedule.length === 0) return Infinity;
-    const today = Date.now();
-    const dates = group.schedule.map((s) => new Date(s.date).getTime());
+    if (!group.scheduleList || group.scheduleList.length === 0) return Infinity;
+    const dates = group.scheduleList.map((s) => new Date(s.scheduleContents.startDate).getTime());
     const future = dates.filter((d) => d >= today);
     if (future.length > 0) return Math.min(...future) - today;
     return today - Math.max(...dates);
   }
 
   const filtered = (selectedLocation
-    ? groups.filter((g) => g.location === selectedLocation)
+    ? groups.filter((g) => prefName(g) === selectedLocation)
     : groups
   ).slice().sort((a, b) => {
     const aDate = nearestDate(a);
     const bDate = nearestDate(b);
-    if (aDate === Infinity && bDate === Infinity) return b.members.length - a.members.length;
+    if (aDate === Infinity && bDate === Infinity) return (b.memberCount ?? 0) - (a.memberCount ?? 0);
     if (aDate === Infinity) return 1;
     if (bDate === Infinity) return -1;
     if (aDate !== bDate) return aDate - bDate;
-    return b.members.length - a.members.length;
+    return (b.memberCount ?? 0) - (a.memberCount ?? 0);
   });
 
   function handleSelect(loc: string) {
@@ -130,7 +133,7 @@ export default function GroupsSection({ groups, heroBg }: { groups: Group[]; her
         <div className="absolute inset-0 bg-black/0" />
         <div className="relative z-10 flex flex-col items-center gap-6">
           <h2 className="text-3xl md:text-5xl font-bold tracking-wide">Make YUKITOMO</h2>
-          <p className="text-sm md:text-base tracking-widest">ー "雪とも"と最高の思い出を作ろうー</p>
+          <p className="text-sm md:text-base tracking-widest">ー &ldquo;雪とも&rdquo;と最高の思い出を作ろうー</p>
         </div>
       </section>
 
@@ -167,26 +170,50 @@ export default function GroupsSection({ groups, heroBg }: { groups: Group[]; her
             <p className="text-center text-white py-12">該当するグループが見つかりません</p>
           ) : (
             <>
-              {filtered.slice(0, visibleCount).map((group) => (
-                <Link key={group.id} href={`/groups/${group.id}`} className="block">
-                  <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-4 mb-4">
-                      <img
-                        src={group.iconUrl}
-                        alt={group.name}
-                        className="w-16 h-16 rounded-full object-cover shrink-0"
-                      />
-                      <div className="font-bold text-lg text-[#1a1a1a]">
-                        {group.name}
-                        <span className="ml-3 font-normal text-sm text-gray-400">
-                          {group.members.length}人
-                        </span>
+              {filtered.slice(0, visibleCount).map((group) => {
+                const nextSchedule = (group.scheduleList ?? [])
+                  .map((s) => ({ ...s, time: new Date(s.scheduleContents.startDate).getTime() }))
+                  .filter((s) => s.time >= today)
+                  .sort((a, b) => a.time - b.time)[0] ?? null;
+
+                return (
+                  <Link key={group.groupId} href={`/groups/${group.groupId}`} className="block">
+                    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4 mb-4">
+                        <img
+                          src={group.thumbnailImageUrl}
+                          alt={group.groupName}
+                          className="w-16 h-16 rounded-full object-cover shrink-0"
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-lg text-[#1a1a1a]">{group.groupName}</span>
+                          <span className="font-normal text-sm text-gray-400">{group.memberCount}人</span>
+                          <span className="text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: "#e05040" }}>
+                            募集中
+                          </span>
+                        </div>
                       </div>
+                      <p className="text-sm text-gray-600 leading-relaxed mb-4">{group.recruitmentMessage}</p>
+                      {nextSchedule ? (
+                        <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ backgroundColor: "#eef2f8" }}>
+                          <span className="text-base">📅</span>
+                          <div>
+                            <p className="text-xs text-gray-400 leading-none mb-0.5">次の予定</p>
+                            <p className="text-sm font-bold" style={{ color: "#1a3060" }}>
+                              {nextSchedule.scheduleContents.startDate}　{nextSchedule.scheduleContents.freeSkiAreaName}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2.5">
+                          <span className="text-base">📅</span>
+                          <p className="text-sm text-gray-300">予定なし</p>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">{group.recruitment}</p>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
               {selectedLocation && visibleCount < filtered.length && (
                 <button
                   onClick={() => setVisibleCount((v) => v + TOP_LIMIT)}

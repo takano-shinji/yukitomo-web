@@ -1,24 +1,26 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGroup, getGroups } from "@/lib/api";
-import type { Level, SnsLinks } from "@/lib/types";
+import { LEVEL_RANGE_LABEL, PREFECTURE_LABEL } from "@/lib/types";
 import MemberSection from "./MemberSection";
 import AppBadges from "@/app/components/AppBadges";
 
 export async function generateStaticParams() {
   const groups = await getGroups();
-  return groups.map((g) => ({ id: g.id }));
+  return groups.map((g) => ({ id: g.groupId }));
 }
 
-function SnsSection({ sns }: { sns: SnsLinks }) {
+function SnsSection({ group }: { group: { webUrl?: string; instagramUrl?: string; twitterUrl?: string; facebookUrl?: string; tikTokUrl?: string; youtubeUrl?: string } }) {
   const items = [
-    { key: "website", label: "ホームページ", icon: "🌐" },
-    { key: "instagram", label: "Instagram", icon: "📸" },
-    { key: "x", label: "X (Twitter)", icon: "𝕏" },
-    { key: "line", label: "LINE", icon: "💬" },
-  ] as const;
+    { key: "webUrl" as const, label: "ホームページ", icon: "🌐" },
+    { key: "instagramUrl" as const, label: "Instagram", icon: "📸" },
+    { key: "twitterUrl" as const, label: "X (Twitter)", icon: "𝕏" },
+    { key: "facebookUrl" as const, label: "Facebook", icon: "📘" },
+    { key: "tikTokUrl" as const, label: "TikTok", icon: "🎵" },
+    { key: "youtubeUrl" as const, label: "YouTube", icon: "▶️" },
+  ];
 
-  const links = items.filter(({ key }) => sns[key]);
+  const links = items.filter(({ key }) => group[key]);
   if (links.length === 0) return null;
 
   return (
@@ -28,12 +30,12 @@ function SnsSection({ sns }: { sns: SnsLinks }) {
           <dt className="w-24 shrink-0 text-gray-400">{label}</dt>
           <dd>
             <a
-              href={sns[key]}
+              href={group[key]}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#1a3060] text-sm hover:underline break-all"
             >
-              {icon} {sns[key]}
+              {icon} {group[key]}
             </a>
           </dd>
         </div>
@@ -41,12 +43,6 @@ function SnsSection({ sns }: { sns: SnsLinks }) {
     </>
   );
 }
-
-const LEVEL_LABEL: Record<Level, string> = {
-  beginner: "初心者歓迎",
-  allround: "オールラウンド",
-  advanced: "中上級者",
-};
 
 export default async function GroupPage({
   params,
@@ -57,7 +53,10 @@ export default async function GroupPage({
   const group = await getGroup(id);
   if (!group) notFound();
 
-  const coverImage = group.gallery[0] ?? null;
+  const galleryImages = group.galleryImages ?? [];
+  const coverImage = group.coverImageUrl ?? galleryImages[0]?.imageURL ?? null;
+  const owner = group.memberList?.find((m) => m.isOwner);
+  const prefectureName = group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] : undefined;
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -66,7 +65,7 @@ export default async function GroupPage({
         {coverImage && (
           <img
             src={coverImage}
-            alt={`${group.name} カバー画像`}
+            alt={`${group.groupName} カバー画像`}
             className="w-full h-full object-cover"
           />
         )}
@@ -83,13 +82,13 @@ export default async function GroupPage({
         <div className="absolute inset-0 flex items-center justify-center px-4">
           <div className="bg-white rounded-2xl px-6 md:px-12 py-5 md:py-7 flex items-center gap-4 md:gap-6 shadow-lg w-full max-w-sm md:max-w-none md:w-auto">
             <img
-              src={group.iconUrl}
-              alt={group.name}
+              src={group.thumbnailImageUrl}
+              alt={group.groupName}
               className="w-16 h-16 md:w-28 md:h-28 rounded-full object-cover shrink-0"
             />
             <div>
-              <h1 className="text-xl md:text-3xl font-bold text-[#1a1a1a]">{group.name}</h1>
-              <p className="text-sm md:text-base text-gray-500 mt-1">{group.location}</p>
+              <h1 className="text-xl md:text-3xl font-bold text-[#1a1a1a]">{group.groupName}</h1>
+              <p className="text-sm md:text-base text-gray-500 mt-1">{prefectureName}</p>
             </div>
           </div>
         </div>
@@ -100,7 +99,7 @@ export default async function GroupPage({
         {/* 募集文 */}
         <section className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="font-bold text-[#1a1a1a] mb-3">こんな人を募集しています</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">{group.recruitment}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{group.recruitmentMessage}</p>
         </section>
 
         {/* グループ情報 */}
@@ -109,21 +108,23 @@ export default async function GroupPage({
           <dl className="flex flex-col gap-3 text-sm">
             <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
               <dt className="sm:w-24 shrink-0 text-gray-400">所在地</dt>
-              <dd className="text-gray-700">{group.location}</dd>
+              <dd className="text-gray-700">{prefectureName}</dd>
             </div>
             <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
               <dt className="sm:w-24 shrink-0 text-gray-400">活動場所</dt>
               <dd className="text-gray-700">{group.activityArea}</dd>
             </div>
-            <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
-              <dt className="sm:w-24 shrink-0 text-gray-400">レベル</dt>
-              <dd className="text-gray-700">{LEVEL_LABEL[group.level]}</dd>
-            </div>
+            {group.levelRange != null && (
+              <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
+                <dt className="sm:w-24 shrink-0 text-gray-400">レベル</dt>
+                <dd className="text-gray-700">{LEVEL_RANGE_LABEL[group.levelRange] ?? group.levelRange}</dd>
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
               <dt className="sm:w-24 shrink-0 text-gray-400">活動頻度</dt>
-              <dd className="text-gray-700">{group.frequency}</dd>
+              <dd className="text-gray-700">{group.activityFrequency}</dd>
             </div>
-            {group.sns && <SnsSection sns={group.sns} />}
+            <SnsSection group={group} />
           </dl>
         </section>
 
@@ -131,47 +132,51 @@ export default async function GroupPage({
         <section className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="font-bold text-[#1a1a1a] mb-3">自己紹介・ルール</h2>
           <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-            {group.description}
+            {group.profile}
           </p>
         </section>
 
         {/* メンバーリスト */}
-        <MemberSection members={group.members} ownerId={group.owner.id} />
+        {group.memberList && (
+          <MemberSection members={group.memberList} ownerId={group.ownerAccountId} />
+        )}
 
         {/* オーナーにメッセージ CTA */}
-        <section className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <img
-              src={group.owner.iconUrl}
-              alt={group.owner.name}
-              className="w-12 h-12 rounded-full object-cover shrink-0"
-            />
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">オーナー</p>
-              <p className="text-sm font-medium text-gray-700">{group.owner.name}</p>
+        {owner && (
+          <section className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img
+                src={owner.iconImageUrl}
+                alt={owner.nickname}
+                className="w-12 h-12 rounded-full object-cover shrink-0"
+              />
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">オーナー</p>
+                <p className="text-sm font-medium text-gray-700">{owner.nickname}</p>
+              </div>
             </div>
-          </div>
-          <button
-            className="shrink-0 px-5 py-2.5 rounded-full text-white text-sm font-bold"
-            style={{ backgroundColor: "#e05040" }}
-          >
-            メッセージを送る【応募】
-          </button>
-        </section>
+            <button
+              className="shrink-0 px-5 py-2.5 rounded-full text-white text-sm font-bold"
+              style={{ backgroundColor: "#e05040" }}
+            >
+              メッセージを送る【応募】
+            </button>
+          </section>
+        )}
 
         {/* スケジュール */}
         <section className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="font-bold text-[#1a1a1a] mb-4">スケジュール</h2>
-          {group.schedule.length === 0 ? (
+          {!group.scheduleList || group.scheduleList.length === 0 ? (
             <p className="text-sm text-gray-400">予定はありません</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {group.schedule.map((item, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-sm">
-                  <div className="sm:w-24 shrink-0 text-gray-400">{item.date}</div>
+              {group.scheduleList.map((item) => (
+                <div key={item.id} className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-sm">
+                  <div className="sm:w-24 shrink-0 text-gray-400">{item.scheduleContents.startDate}</div>
                   <div>
-                    <p className="font-medium text-gray-700">{item.content}</p>
-                    <p className="text-gray-400">{item.place}</p>
+                    <p className="font-medium text-gray-700">{item.scheduleContents.eventName}</p>
+                    <p className="text-gray-400">{item.scheduleContents.freeSkiAreaName}</p>
                   </div>
                 </div>
               ))}
@@ -180,15 +185,15 @@ export default async function GroupPage({
         </section>
 
         {/* ギャラリー */}
-        {group.gallery.length > 0 && (
+        {galleryImages.length > 0 && (
           <section className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="font-bold text-[#1a1a1a] mb-4">ギャラリー</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {group.gallery.map((url, i) => (
+              {galleryImages.map((img) => (
                 <img
-                  key={i}
-                  src={url}
-                  alt={`ギャラリー ${i + 1}`}
+                  key={img.id}
+                  src={img.imageURL}
+                  alt={`${group.groupName} ギャラリー画像`}
                   className="w-40 h-28 object-cover rounded-lg shrink-0"
                 />
               ))}
@@ -202,7 +207,7 @@ export default async function GroupPage({
           style={{ backgroundColor: "#1a3060" }}
         >
           <p className="text-white font-bold text-lg">
-            {group.name}に参加したい？
+            {group.groupName}に参加したい？
           </p>
           <p className="text-white/70 text-sm">
             アプリからオーナーにメッセージを送ろう

@@ -10,7 +10,17 @@
       "Bash(pnpm dev *)",
       "Bash(curl -s http://localhost:3000)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(kill 21947)"
+      "Bash(kill 21947)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm lint *)",
+      "Bash(npx tsc *)",
+      "Bash(netstat -anp tcp)",
+      "WebFetch(domain:stg.yukitomo.link)",
+      "Read(//Users/takanoshinji/Downloads/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3)",
+      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=1\" -H \"App-Version: 11.23.45\")",
+      "Bash(git add *)"
     ]
   }
 }

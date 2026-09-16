@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getGroup, getGroups } from "@/lib/api";
 import { LEVEL_RANGE_LABEL, PREFECTURE_LABEL } from "@/lib/types";
 import MemberSection from "./MemberSection";
+import OwnerCta from "./OwnerCta";
 import AppBadges from "@/app/components/AppBadges";
 
 export async function generateStaticParams() {
@@ -142,27 +143,7 @@ export default async function GroupPage({
         )}
 
         {/* オーナーにメッセージ CTA */}
-        {owner && (
-          <section className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img
-                src={owner.iconImageUrl}
-                alt={owner.nickname}
-                className="w-12 h-12 rounded-full object-cover shrink-0"
-              />
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">オーナー</p>
-                <p className="text-sm font-medium text-gray-700">{owner.nickname}</p>
-              </div>
-            </div>
-            <button
-              className="shrink-0 px-5 py-2.5 rounded-full text-white text-sm font-bold"
-              style={{ backgroundColor: "#e05040" }}
-            >
-              メッセージを送る【応募】
-            </button>
-          </section>
-        )}
+        {owner && <OwnerCta owner={owner} />}
 
         {/* スケジュール */}
         <section className="bg-white rounded-xl p-6 shadow-sm">

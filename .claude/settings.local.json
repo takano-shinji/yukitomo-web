@@ -27,7 +27,8 @@
       "Bash(python3 -m json.tool)",
       "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\")",
       "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\" -H \"Authorization: Bearer test\")",
-      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\" -H \"Authorization: \")"
+      "Bash(curl -s -i \"https://stg.yukitomo.link/group/getGroup?id=15\" -H \"App-Version: 11.23.45\" -H \"Authorization: \")",
+      "Bash(pnpm add *)"
     ]
   }
 }

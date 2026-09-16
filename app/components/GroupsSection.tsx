@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { IconCalendarEvent } from "@tabler/icons-react";
 import { PREFECTURE_LABEL, type GroupSearchModel } from "@/lib/types";
 
 const TOP_LIMIT = 10;
@@ -165,7 +166,7 @@ export default function GroupsSection({ groups, heroBg }: { groups: GroupSearchM
           )}
           <div className="flex justify-end">
             <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-full">
-              📅 スケジュールが近い順に表示
+              <IconCalendarEvent size={14} stroke={2} /> スケジュールが近い順に表示
             </span>
           </div>
           {filtered.length === 0 ? (
@@ -196,7 +197,7 @@ export default function GroupsSection({ groups, heroBg }: { groups: GroupSearchM
                     )}
                     {group.nextSchedule ? (
                       <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ backgroundColor: "#eef2f8" }}>
-                        <span className="text-base">📅</span>
+                        <IconCalendarEvent size={28} stroke={2} style={{ color: "#1a3060" }} className="shrink-0" />
                         <div>
                           <p className="text-xs text-gray-400 leading-none mb-0.5">次の予定</p>
                           <p className="text-sm font-bold" style={{ color: "#1a3060" }}>
@@ -206,7 +207,7 @@ export default function GroupsSection({ groups, heroBg }: { groups: GroupSearchM
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2.5">
-                        <span className="text-base">📅</span>
+                        <IconCalendarEvent size={28} stroke={2} className="shrink-0 text-gray-300" />
                         <p className="text-sm text-gray-300">予定なし</p>
                       </div>
                     )}

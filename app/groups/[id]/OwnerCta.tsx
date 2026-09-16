@@ -9,7 +9,7 @@ export default function OwnerCta({ owner }: { owner: GroupMemberModel }) {
 
   return (
     <>
-      <section className="bg-white rounded-xl p-6 shadow-sm flex items-center justify-between gap-4">
+      <section className="bg-white rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <img
             src={owner.iconImageUrl}
@@ -23,7 +23,7 @@ export default function OwnerCta({ owner }: { owner: GroupMemberModel }) {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="shrink-0 px-5 py-2.5 rounded-full text-white text-sm font-bold"
+          className="shrink-0 w-full sm:w-auto px-5 py-2.5 rounded-full text-white text-sm font-bold"
           style={{ backgroundColor: "#e05040" }}
         >
           メッセージを送る【応募】

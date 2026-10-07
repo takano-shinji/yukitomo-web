@@ -1,25 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { GroupMemberModel } from "@/lib/types";
 import AppBadges from "@/app/components/AppBadges";
 
-export default function OwnerCta({ owner }: { owner: GroupMemberModel }) {
+export default function OwnerCta() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <>
       <section className="bg-white rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <img
-            src={owner.iconImageUrl}
-            alt={owner.nickname}
-            className="w-12 h-12 rounded-full object-cover shrink-0"
-          />
-          <div>
-            <p className="text-xs text-gray-400 mb-0.5">オーナー</p>
-            <p className="text-sm font-medium text-gray-700">{owner.nickname}</p>
-          </div>
+        <div>
+          <h2 className="font-bold text-[#1a1a1a] mb-1">このグループに参加したい方へ</h2>
+          <p className="text-sm text-gray-500">オーナーにメッセージを送って参加を申請しよう</p>
         </div>
         <button
           onClick={() => setModalOpen(true)}

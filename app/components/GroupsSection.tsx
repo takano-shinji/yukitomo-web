@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { IconCalendarEvent } from "@tabler/icons-react";
-import { PREFECTURE_LABEL, type GroupSearchModel } from "@/lib/types";
+import { PREFECTURE_LABEL, scheduleLocation, type GroupSearchModel } from "@/lib/types";
 
 const TOP_LIMIT = 10;
 
@@ -77,10 +77,6 @@ export default function GroupsSection({ groups, heroBg }: { groups: GroupSearchM
 
   function prefName(group: GroupSearchModel): string {
     return group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] ?? "" : "";
-  }
-
-  function scheduleLocation(schedule: NonNullable<GroupSearchModel["nextSchedule"]>): string {
-    return schedule.skiAreaName || schedule.freeSkiAreaName || "";
   }
 
   const prefectureOrder = REGION_GROUPS.flatMap((r) => r.prefectures);

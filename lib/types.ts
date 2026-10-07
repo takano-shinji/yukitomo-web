@@ -69,82 +69,7 @@ export type ImageModel = {
   createdDateTime: string;
 };
 
-export type GroupMemberModel = {
-  accountId: string;
-  nickname: string;
-  iconImageId?: string;
-  iconImageUrl?: string;
-  /** メンバーシップ状態(1:承認済 5:招待中 6:申請中 9:ブロック) */
-  status?: number;
-  isOwner: boolean;
-  joinedAt: string;
-};
-
-export type ScheduleContentsModel = {
-  scheduleCode: string;
-  startDate: string;
-  endDate: string;
-  eventName: string;
-  freeSkiAreaName?: string;
-  skiAreaId: string;
-  isOpen: boolean;
-  isRecruitment: boolean;
-  comment: string;
-  contactAddress: string;
-};
-
-export type ScheduleModel = {
-  id: string;
-  groupId?: string;
-  groupName?: string;
-  groupImageUrl?: string;
-  accountId: string;
-  scheduleContents: ScheduleContentsModel;
-  commentCount?: number;
-  likeCount?: number;
-  isLiked?: boolean;
-  isYukitomo?: boolean;
-};
-
-export type Group = {
-  groupId: string;
-  groupName: string;
-  ownerAccountId: string;
-  memberCount: number;
-  isOwner?: boolean;
-  thumbnailImageId?: string;
-  thumbnailImageUrl?: string;
-  coverImageId?: string;
-  coverImageUrl?: string;
-  galleryImageIds?: string[];
-  galleryImages?: ImageModel[];
-  /** 都道府県コード(1〜47の整数・ゼロ埋めなし) */
-  prefectures?: number;
-  activityArea?: string;
-  activityFrequency?: string;
-  levelRange?: number;
-  profile?: string;
-  recruitmentMessage?: string;
-  /** 募集フラグ(1:募集中 0:募集停止) */
-  recruitmentFlg?: number;
-  /** 公開フラグ(1:公開 0:非公開) */
-  publicFlg?: number;
-  /** メンバーのスケジュール作成可否(1:メンバー作成可 0:オーナーのみ) */
-  memberCanCreateScheduleFlg?: number;
-  /** 呼び出し元のステータス(1:承認済 5:招待中 6:申請中 9:ブロック) */
-  myStatus?: number;
-  webUrl?: string;
-  instagramUrl?: string;
-  twitterUrl?: string;
-  facebookUrl?: string;
-  tikTokUrl?: string;
-  youtubeUrl?: string;
-  // このサイト独自の拡張（実APIでは別エンドポイント getGroupMemberList / getGroupSchedule 相当）
-  memberList?: GroupMemberModel[];
-  scheduleList?: ScheduleModel[];
-};
-
-/** GET /web/searchGroup の nextSchedule（直近のグループスケジュール） */
+/** GET /web/searchGroup の nextSchedule、GET /web/getGroup の scheduleList 1件分 */
 export type GroupNextScheduleModel = {
   id: string;
   startDate: string;
@@ -154,6 +79,11 @@ export type GroupNextScheduleModel = {
   skiAreaName: string;
   freeSkiAreaName: string;
 };
+
+/** 場所はskiAreaName、freeSkiAreaNameの順に使い、両方空なら場所未設定として扱う */
+export function scheduleLocation(schedule: GroupNextScheduleModel): string {
+  return schedule.skiAreaName || schedule.freeSkiAreaName || "";
+}
 
 /** GET /web/searchGroup のレスポンス1件分（一覧用の軽量モデル、認証不要） */
 export type GroupSearchModel = {
@@ -166,4 +96,22 @@ export type GroupSearchModel = {
   recruitmentFlg?: number;
   recruitmentMessage?: string;
   nextSchedule?: GroupNextScheduleModel;
+};
+
+/** GET /web/getGroup のレスポンス（公開グループの詳細、認証不要。メンバーは人数のみ） */
+export type WebGroupDetailModel = {
+  groupId: string;
+  groupName: string;
+  memberCount: number;
+  galleryImages: ImageModel[];
+  scheduleList: GroupNextScheduleModel[];
+  prefectures?: number;
+  activityArea?: string;
+  activityFrequency?: string;
+  levelRange?: number;
+  profile?: string;
+  recruitmentFlg?: number;
+  recruitmentMessage?: string;
+  coverImageUrl?: string;
+  thumbnailImageUrl?: string;
 };

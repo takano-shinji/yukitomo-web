@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGroup } from "@/lib/api";
 import { LEVEL_RANGE_LABEL, PREFECTURE_LABEL, scheduleLocation } from "@/lib/types";
+import { HERO_BG, SITE_NAME } from "@/lib/site";
 import OwnerCta from "./OwnerCta";
 import AppBadges from "@/app/components/AppBadges";
 
@@ -13,6 +15,51 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
       <dd className="text-gray-700">{value}</dd>
     </div>
   );
+}
+
+function toDescription(text: string | undefined, maxLength = 120): string {
+  const normalized = (text ?? "").replace(/\s+/g, " ").trim();
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength - 1)}…` : normalized;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const group = await getGroup(id);
+  if (!group) {
+    return { title: "グループが見つかりません", robots: { index: false, follow: false } };
+  }
+
+  const prefectureName = group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] : undefined;
+  const title = prefectureName
+    ? `${group.groupName}｜${prefectureName}のスキー・スノボ仲間募集`
+    : `${group.groupName}｜スキー・スノボ仲間募集`;
+  const description =
+    toDescription(group.recruitmentMessage) ||
+    toDescription(group.profile) ||
+    `${prefectureName ? `${prefectureName}で活動する` : ""}スキー・スノボのグループ「${group.groupName}」のページです。`;
+  const image =
+    group.coverImageUrl ?? group.galleryImages[0]?.imageURL ?? group.thumbnailImageUrl ?? HERO_BG;
+  const url = `/groups/${group.groupId}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      locale: "ja_JP",
+      title: `${title}｜${SITE_NAME}`,
+      description,
+      url,
+      images: [image],
+    },
+    twitter: { card: "summary_large_image", title: `${title}｜${SITE_NAME}`, description, images: [image] },
+  };
 }
 
 export default async function GroupPage({

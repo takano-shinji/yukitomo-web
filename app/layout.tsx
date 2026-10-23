@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/app/components/Header";
+import { HERO_BG, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "雪とも",
-  description: "全国のスキー・スノボサークル、クラブチームが集結。最高の「雪とも」が見つかる。",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME}｜全国のスキー・スノボ仲間が見つかる`,
+    template: `%s｜${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "ja_JP",
+    images: [HERO_BG],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({

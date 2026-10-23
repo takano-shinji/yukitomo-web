@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { GroupSearchModel, WebGroupDetailModel } from "./types";
 
 const API_BASE_URL = "https://stg.yukitomo.link";
@@ -32,7 +33,7 @@ export async function searchGroups(params?: {
 }
 
 /** GET /web/getGroup（認証不要）。非公開・削除済み・存在しないグループは null。 */
-export async function getGroup(id: string): Promise<WebGroupDetailModel | null> {
+export const getGroup = cache(async (id: string): Promise<WebGroupDetailModel | null> => {
   try {
     const res = await fetch(`${API_BASE_URL}/web/getGroup?id=${encodeURIComponent(id)}`, requestInit);
     if (!res.ok) return null;
@@ -40,4 +41,4 @@ export async function getGroup(id: string): Promise<WebGroupDetailModel | null> 
   } catch {
     return null;
   }
-}
+});

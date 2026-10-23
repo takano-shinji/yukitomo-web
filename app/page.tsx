@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import { searchGroups } from "@/lib/api";
+import { HERO_BG } from "@/lib/site";
 import GroupsSection from "@/app/components/GroupsSection";
 import AppBadges from "@/app/components/AppBadges";
 import FaqSection from "@/app/components/FaqSection";
 
-const HERO_BG = "https://storage.googleapis.com/studio-design-asset-files/projects/EjOQJw1oqJ/s-961x1704_v-fms_webp_cff9f9ba-5af5-40b1-a1b3-2fd5f8504676.webp";
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const groups = await searchGroups();

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { IconCalendarEvent } from "@tabler/icons-react";
+import AppBadges from "@/app/components/AppBadges";
 import { PREFECTURE_LABEL, scheduleLocation, type GroupSearchModel } from "@/lib/types";
 
 const TOP_LIMIT = 10;
@@ -138,89 +139,103 @@ export default function GroupsSection({ groups, heroBg }: { groups: GroupSearchM
 
       {/* グループ一覧 */}
       <section id="groups" ref={listRef} className="py-12 px-4 md:px-8" style={{ backgroundColor: "#8090a8" }}>
-        <div className="max-w-2xl mx-auto flex flex-col gap-5">
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex flex-col items-center gap-1 text-white/70">
-              <span className="text-xs tracking-widest">グループを探す</span>
-              <span className="animate-bounce text-lg">↓</span>
-            </div>
-            <p className="text-sm text-white/80">地方・都道府県で絞り込む</p>
-            <LocationTags
-              locations={locations}
-              selected={selectedLocation}
-              onChange={handleSelect}
-              theme="dark"
-            />
+        {groups.length === 0 ? (
+          <div className="max-w-2xl mx-auto bg-white rounded-xl px-6 py-12 flex flex-col items-center gap-6 text-center shadow-sm">
+            <h3 className="text-lg md:text-xl font-bold text-[#1a1a1a]">
+              まだグループがありません
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              アプリからグループを作って、
+              <br />
+              最初の「雪とも」になろう！
+            </p>
+            <AppBadges />
           </div>
-          {selectedLocation && (
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-white tracking-wide">
-                {selectedLocation}の雪ともグループ
-              </h3>
-              <p className="text-sm text-white/60 mt-1">{filtered.length}件</p>
+        ) : (
+          <div className="max-w-2xl mx-auto flex flex-col gap-5">
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-1 text-white/70">
+                <span className="text-xs tracking-widest">グループを探す</span>
+                <span className="animate-bounce text-lg">↓</span>
+              </div>
+              <p className="text-sm text-white/80">地方・都道府県で絞り込む</p>
+              <LocationTags
+                locations={locations}
+                selected={selectedLocation}
+                onChange={handleSelect}
+                theme="dark"
+              />
             </div>
-          )}
-          <div className="flex justify-end">
-            <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-full">
-              <IconCalendarEvent size={14} stroke={2} /> スケジュールが近い順に表示
-            </span>
-          </div>
-          {filtered.length === 0 ? (
-            <p className="text-center text-white py-12">該当するグループが見つかりません</p>
-          ) : (
-            <>
-              {filtered.slice(0, visibleCount).map((group) => (
-                <Link key={group.groupId} href={`/groups/${group.groupId}`} className="block">
-                  <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-4 mb-4">
-                      <img
-                        src={group.thumbnailImageUrl}
-                        alt={group.groupName}
-                        className="w-16 h-16 rounded-full object-cover shrink-0"
-                      />
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-lg text-[#1a1a1a]">{group.groupName}</span>
-                        <span className="font-normal text-sm text-gray-400">{group.memberCount}人</span>
-                        {group.recruitmentFlg === 1 && (
-                          <span className="text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: "#e05040" }}>
-                            募集中
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {group.recruitmentMessage && (
-                      <p className="text-sm text-gray-600 leading-relaxed mb-4">{group.recruitmentMessage}</p>
-                    )}
-                    {group.nextSchedule ? (
-                      <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ backgroundColor: "#eef2f8" }}>
-                        <IconCalendarEvent size={28} stroke={2} style={{ color: "#1a3060" }} className="shrink-0" />
-                        <div>
-                          <p className="text-xs text-gray-400 leading-none mb-0.5">次の予定</p>
-                          <p className="text-sm font-bold" style={{ color: "#1a3060" }}>
-                            {group.nextSchedule.startDate}　{scheduleLocation(group.nextSchedule)}
-                          </p>
+            {selectedLocation && (
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-white tracking-wide">
+                  {selectedLocation}の雪ともグループ
+                </h3>
+                <p className="text-sm text-white/60 mt-1">{filtered.length}件</p>
+              </div>
+            )}
+            <div className="flex justify-end">
+              <span className="inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                <IconCalendarEvent size={14} stroke={2} /> スケジュールが近い順に表示
+              </span>
+            </div>
+            {filtered.length === 0 ? (
+              <p className="text-center text-white py-12">該当するグループが見つかりません</p>
+            ) : (
+              <>
+                {filtered.slice(0, visibleCount).map((group) => (
+                  <Link key={group.groupId} href={`/groups/${group.groupId}`} className="block">
+                    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-4 mb-4">
+                        <img
+                          src={group.thumbnailImageUrl}
+                          alt={group.groupName}
+                          className="w-16 h-16 rounded-full object-cover shrink-0"
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-lg text-[#1a1a1a]">{group.groupName}</span>
+                          <span className="font-normal text-sm text-gray-400">{group.memberCount}人</span>
+                          {group.recruitmentFlg === 1 && (
+                            <span className="text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: "#e05040" }}>
+                              募集中
+                            </span>
+                          )}
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2.5">
-                        <IconCalendarEvent size={28} stroke={2} className="shrink-0 text-gray-300" />
-                        <p className="text-sm text-gray-300">予定なし</p>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              ))}
-              {selectedLocation && visibleCount < filtered.length && (
-                <button
-                  onClick={() => setVisibleCount((v) => v + TOP_LIMIT)}
-                  className="w-full py-3 rounded-xl bg-white/20 text-white font-medium hover:bg-white/30 transition-colors"
-                >
-                  もっと見る（残り{filtered.length - visibleCount}件）
-                </button>
-              )}
-            </>
-          )}
-        </div>
+                      {group.recruitmentMessage && (
+                        <p className="text-sm text-gray-600 leading-relaxed mb-4">{group.recruitmentMessage}</p>
+                      )}
+                      {group.nextSchedule ? (
+                        <div className="flex items-center gap-2 rounded-lg px-4 py-2.5" style={{ backgroundColor: "#eef2f8" }}>
+                          <IconCalendarEvent size={28} stroke={2} style={{ color: "#1a3060" }} className="shrink-0" />
+                          <div>
+                            <p className="text-xs text-gray-400 leading-none mb-0.5">次の予定</p>
+                            <p className="text-sm font-bold" style={{ color: "#1a3060" }}>
+                              {group.nextSchedule.startDate}　{scheduleLocation(group.nextSchedule)}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2.5">
+                          <IconCalendarEvent size={28} stroke={2} className="shrink-0 text-gray-300" />
+                          <p className="text-sm text-gray-300">予定なし</p>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+                {selectedLocation && visibleCount < filtered.length && (
+                  <button
+                    onClick={() => setVisibleCount((v) => v + TOP_LIMIT)}
+                    className="w-full py-3 rounded-xl bg-white/20 text-white font-medium hover:bg-white/30 transition-colors"
+                  >
+                    もっと見る（残り{filtered.length - visibleCount}件）
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </section>
     </>
   );

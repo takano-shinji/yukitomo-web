@@ -1,7 +1,8 @@
 import { cache } from "react";
 import type { GroupSearchModel, WebGroupDetailModel } from "./types";
 
-const API_BASE_URL = "https://stg.yukitomo.link";
+/** 接続先API。本番は Vercel の環境変数 API_BASE_URL で指定する（未設定なら検証環境）。 */
+const API_BASE_URL = (process.env.API_BASE_URL ?? "https://stg.yukitomo.link").replace(/\/$/, "");
 const APP_VERSION = "11.23.45";
 
 const requestInit: RequestInit = {

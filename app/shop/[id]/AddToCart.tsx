@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { hasOptions, variantLabel, type Product } from "@/lib/shop/products";
 import { useCart } from "@/lib/shop/cart";
-import { SWATCH, btnPrimary, focusRing } from "../ui";
+import { SWATCH, btnPrimary, focusRing, linkBtnPrimary, linkBtnSecondary } from "../ui";
 
 function unique(values: string[]) {
   return Array.from(new Set(values));
@@ -152,12 +152,17 @@ export default function AddToCart({ product }: { product: Product }) {
               : "カートに入れる"}
         </button>
         {added && (
-          <p role="status" className="mt-2 text-center text-sm text-[#3d3d3d]">
-            カートに入れました。
-            <Link href="/shop/cart" className={`ml-2 text-[#1a3060] underline ${focusRing}`}>
-              カートを見る
-            </Link>
-          </p>
+          <div role="status" className="mt-3 flex flex-col gap-3">
+            <p className="text-center text-sm font-bold text-[#1a3060]">カートに入れました</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Link href="/shop" className={linkBtnSecondary}>
+                買い物を続ける
+              </Link>
+              <Link href="/shop/cart" className={linkBtnPrimary}>
+                カートを見る
+              </Link>
+            </div>
+          </div>
         )}
       </div>
     </div>

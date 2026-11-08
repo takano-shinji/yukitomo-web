@@ -31,24 +31,42 @@ export default async function ShopPage() {
   const PRODUCTS = await getProducts();
   return (
     <main className="flex flex-col">
-      {/* ヒーロー：画面の端から端まで */}
-      <section className="relative w-full overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] bg-gray-100">
-        <img
-          src="/shop/hero.jpg"
-          alt="新雪のゲレンデと青空"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 px-6 pb-8 md:pb-12 text-center flex flex-col gap-3 text-white">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-wide drop-shadow-lg">雪ともオンラインショップ</h1>
-          <p className="text-xs md:text-sm text-white/90 drop-shadow">
-            全国一律{formatYen(SHIPPING_FEE)}／{formatYen(FREE_SHIPPING_THRESHOLD)}以上のご購入で送料無料
-          </p>
+      {/* ヒーロー：写真はそのまま見せて、見出しはネイビーのパネルを重ねる */}
+      <section className="relative">
+        <div className="relative w-full overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] bg-gray-100">
+          <img
+            src="/shop/hero.jpg"
+            alt="新雪のゲレンデと青空"
+            className="shop-hero-zoom absolute inset-0 h-full w-full object-cover [filter:brightness(1.08)_contrast(1.04)_saturate(1.12)]"
+          />
+        </div>
+        <div className="relative z-10 -mt-20 md:-mt-28 mx-4 sm:mx-6 md:mx-auto md:w-full md:max-w-4xl md:px-6">
+          <div className="flex max-w-md flex-col gap-4 rounded-2xl bg-white p-6 shadow-xl shadow-black/20 md:p-8">
+            <h1 className="flex flex-col gap-1">
+              <img
+                src="/shop/logo.png"
+                alt="yukitomo"
+                className="-mx-2 -my-3 w-48 md:w-56 h-auto"
+              />
+              <span className="text-lg font-bold tracking-wider text-[#1a3060] md:text-xl">
+                オンラインショップ
+              </span>
+            </h1>
+            <p className="text-xs leading-relaxed text-gray-600 md:text-sm">
+              全国一律{formatYen(SHIPPING_FEE)}／{formatYen(FREE_SHIPPING_THRESHOLD)}以上のご購入で送料無料
+            </p>
+            <a
+              href="#products"
+              className={`inline-flex min-h-11 w-fit items-center rounded-lg bg-[#1a3060] px-6 text-sm font-bold text-white transition-colors hover:bg-[#14264d] ${focusRing}`}
+            >
+              商品を見る
+            </a>
+          </div>
         </div>
       </section>
 
-      <div className="max-w-4xl w-full mx-auto px-6 py-12 flex flex-col gap-10">
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="max-w-4xl w-full mx-auto px-6 pt-12 pb-16 md:pt-16 flex flex-col gap-10">
+      <section id="products" className="scroll-mt-20 grid grid-cols-1 sm:grid-cols-2 gap-6">
         {PRODUCTS.map((p) => {
           const soldOut = p.variants.every((v) => v.stock <= 0);
           return (

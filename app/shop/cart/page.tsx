@@ -10,7 +10,7 @@ import {
   formatYen,
 } from "@/lib/shop/shipping";
 import ProductImage from "../ProductImage";
-import { btnPrimary, focusRing } from "../ui";
+import { btnOnNavy, focusRing } from "../ui";
 
 export default function CartPage() {
   const { lines, setQty, remove } = useCart();
@@ -72,7 +72,7 @@ export default function CartPage() {
   const progress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-8 md:py-12 flex flex-col gap-8">
+    <main className="max-w-5xl mx-auto px-6 pt-8 pb-16 md:py-12 flex flex-col gap-8">
       <h1 className="text-xl md:text-2xl font-bold text-[#3d3d3d]">カート</h1>
 
       {items.length === 0 ? (
@@ -142,15 +142,15 @@ export default function CartPage() {
 
           <section
             aria-label="ご注文の合計"
-            className="flex flex-col gap-4 rounded-2xl bg-[#f5f8fc] p-6 text-sm text-[#3d3d3d] md:sticky md:top-24"
+            className="flex flex-col gap-4 rounded-2xl bg-[#1a3060] p-6 text-sm text-white md:sticky md:top-24"
           >
             <div className="flex flex-col gap-2">
               {remaining > 0 ? (
-                <p className="text-xs text-gray-700">
-                  あと<strong className="text-[#1a3060]">{formatYen(remaining)}</strong>で送料無料になります
+                <p className="text-xs text-white/85">
+                  あと<strong className="text-white">{formatYen(remaining)}</strong>で送料無料になります
                 </p>
               ) : (
-                <p className="text-xs font-bold text-[#1a3060]">送料無料です</p>
+                <p className="text-xs font-bold text-white">送料無料です</p>
               )}
               <div
                 role="progressbar"
@@ -158,10 +158,10 @@ export default function CartPage() {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={progress}
-                className="h-1.5 overflow-hidden rounded-full bg-white"
+                className="h-1.5 overflow-hidden rounded-full bg-white/25"
               >
                 <div
-                  className="h-full rounded-full bg-[#1a3060] transition-[width] duration-300 motion-reduce:transition-none"
+                  className="h-full rounded-full bg-white transition-[width] duration-300 motion-reduce:transition-none"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -176,14 +176,14 @@ export default function CartPage() {
                 <dt>送料</dt>
                 <dd>{shipping === 0 ? "無料" : formatYen(shipping)}</dd>
               </div>
-              <div className="flex justify-between border-t border-[#dfe6f0] pt-4 text-base font-bold">
+              <div className="flex justify-between border-t border-white/25 pt-4 text-base font-bold">
                 <dt>合計</dt>
-                <dd className="text-lg text-[#1a3060]">{formatYen(total)}</dd>
+                <dd className="text-lg">{formatYen(total)}</dd>
               </div>
             </dl>
 
             {error && (
-              <p role="alert" className="text-sm text-red-700">
+              <p role="alert" className="rounded-lg bg-white px-3 py-2 text-sm text-red-700">
                 {error}
               </p>
             )}
@@ -191,11 +191,11 @@ export default function CartPage() {
               type="button"
               onClick={handleCheckout}
               disabled={submitting}
-              className={btnPrimary}
+              className={btnOnNavy}
             >
               {submitting ? "決済ページへ移動中…" : "レジに進む"}
             </button>
-            <p className="text-xs text-gray-600 leading-relaxed">
+            <p className="text-xs text-white/75 leading-relaxed">
               お支払いとお届け先の入力は、Squareの安全な決済ページで行います。カード情報は当サイトに保存されません。
             </p>
           </section>

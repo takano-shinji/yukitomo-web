@@ -193,7 +193,7 @@ export default function CartPage() {
               disabled={submitting}
               className={btnOnNavy}
             >
-              {submitting ? "決済ページへ移動中…" : "レジに進む"}
+              {submitting ? "決済ページへ移動中…" : "決済に進む"}
             </button>
             <p className="text-xs text-white/75 leading-relaxed">
               お支払いとお届け先の入力は、Squareの安全な決済ページで行います。カード情報は当サイトに保存されません。

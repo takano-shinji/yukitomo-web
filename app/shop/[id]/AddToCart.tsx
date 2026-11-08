@@ -159,7 +159,7 @@ export default function AddToCart({ product }: { product: Product }) {
                 買い物を続ける
               </Link>
               <Link href="/shop/cart" className={linkBtnPrimary}>
-                カートを見る
+                購入手続きへ
               </Link>
             </div>
           </div>

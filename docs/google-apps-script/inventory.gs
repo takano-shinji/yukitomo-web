@@ -5,7 +5,7 @@
  * スクリプトプロパティ SECRET に、サイト側の STOCK_SHEET_SECRET と同じ値を設定すること。
  *
  * シート構成
- *   「在庫」: A=variantId / B=商品名 / C=レンズカラー / D=在庫数（1行目は見出し）
+ *   「在庫」: A=variantId / B=商品名 / C=フレーム / D=レンズ / E=在庫数（1行目は見出し）
  *   「注文」: スクリプトが自動で追記する（1行目は見出し）
  */
 const STOCK_SHEET = '在庫';
@@ -37,10 +37,10 @@ function json_(obj) {
 
 function readStock_() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(STOCK_SHEET);
-  const rows = sheet.getLastRow() >= 2 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues() : [];
+  const rows = sheet.getLastRow() >= 2 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues() : [];
   const stock = {};
   rows.forEach(function (r) {
-    if (r[0]) stock[String(r[0]).trim()] = Number(r[3]) || 0;
+    if (r[0]) stock[String(r[0]).trim()] = Number(r[4]) || 0;
   });
   return stock;
 }
@@ -69,7 +69,7 @@ function recordOrder_(body) {
     }
 
     const lastStockRow = stockSheet.getLastRow();
-    const stockRows = lastStockRow >= 2 ? stockSheet.getRange(2, 1, lastStockRow - 1, 4).getValues() : [];
+    const stockRows = lastStockRow >= 2 ? stockSheet.getRange(2, 1, lastStockRow - 1, 5).getValues() : [];
     const now = new Date();
     const out = [];
 
@@ -80,22 +80,23 @@ function recordOrder_(body) {
       for (var j = 0; j < stockRows.length; j++) {
         if (String(stockRows[j][0]).trim() === variantId) { idx = j; break; }
       }
-      var name = '', color = '', note = '';
+      var name = '', frame = '', lens = '', note = '';
       if (idx === -1) {
         note = '在庫シートに未登録';
       } else {
         name = stockRows[idx][1];
-        color = stockRows[idx][2];
-        const current = Number(stockRows[idx][3]) || 0;
+        frame = stockRows[idx][2];
+        lens = stockRows[idx][3];
+        const current = Number(stockRows[idx][4]) || 0;
         if (current < qty) note = '在庫不足（要確認）';
         const next = Math.max(0, current - qty);
-        stockSheet.getRange(idx + 2, 4).setValue(next);
-        stockRows[idx][3] = next;
+        stockSheet.getRange(idx + 2, 5).setValue(next);
+        stockRows[idx][4] = next;
       }
-      out.push([now, orderId, variantId, name, color, qty, Number(item.amount) || 0, note]);
+      out.push([now, orderId, variantId, name, frame, lens, qty, Number(item.amount) || 0, note]);
     });
 
-    orderSheet.getRange(orderSheet.getLastRow() + 1, 1, out.length, 8).setValues(out);
+    orderSheet.getRange(orderSheet.getLastRow() + 1, 1, out.length, 9).setValues(out);
     return json_({ ok: true });
   } finally {
     lock.releaseLock();

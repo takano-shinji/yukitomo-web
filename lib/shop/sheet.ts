@@ -35,12 +35,16 @@ let cache: { at: number; stock: StockMap } | null = null;
 const TTL_MS = 20_000;
 
 /**
- * variantId → 在庫数。スプレッドシート未設定のときは null（コード内の初期値を使う）。
+ * variantId → 在庫数。開発中でスプレッドシート未設定のときは null（コード内の初期値を使う）。
  * 設定済みで取得に失敗した場合は例外を投げる（古い在庫で販売しないため）。
  * fresh=true で短時間キャッシュを使わず最新を取得する（決済前の確認用）。
  */
 export async function getStockMap(options?: { fresh?: boolean }): Promise<StockMap | null> {
-  if (!isSheetConfigured()) return null;
+  if (!isSheetConfigured()) {
+    // 本番で未設定のまま販売しないよう、開発時以外はエラーにする
+    if (process.env.NODE_ENV === "production") throw new Error("sheet_not_configured");
+    return null;
+  }
   if (!options?.fresh && cache && Date.now() - cache.at < TTL_MS) return cache.stock;
   const json = await call({ action: "stock" });
   cache = { at: Date.now(), stock: json.stock as StockMap };

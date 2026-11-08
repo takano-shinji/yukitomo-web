@@ -1,4 +1,4 @@
-import { findVariant } from "@/lib/shop/products";
+import { findVariant, variantLabel } from "@/lib/shop/products";
 import { calcShipping } from "@/lib/shop/shipping";
 import { getStockMap } from "@/lib/shop/sheet";
 import { createPaymentLink, getSquareConfig } from "@/lib/shop/square";
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
     if (!found) return bad("販売終了の商品がカートに含まれています。");
     const available = stockMap ? (stockMap[found.variant.id] ?? 0) : found.variant.stock;
     if (available < qty) {
-      return bad(`「${found.product.name}（${found.variant.label}）」の在庫が足りません。`, 409);
+      return bad(`「${[found.product.name, variantLabel(found.variant)].filter(Boolean).join("／")}」の在庫が足りません。`, 409);
     }
     items.push({
       variantId: found.variant.id,
       name: found.product.name,
-      variationName: found.variant.label,
+      variationName: variantLabel(found.variant),
       quantity: qty,
       unitPrice: found.product.price,
     });

@@ -38,7 +38,7 @@ export async function createPaymentLink(params: {
       location_id: config.locationId,
       line_items: items.map((i) => ({
         name: i.name,
-        variation_name: i.variationName,
+        ...(i.variationName ? { variation_name: i.variationName } : {}),
         quantity: String(i.quantity),
         // Webhookで注文を受け取ったとき、どの商品かを特定するために持たせる
         metadata: { variant_id: i.variantId },

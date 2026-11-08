@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/shop/cart";
-import { findVariant } from "@/lib/shop/products";
+import { findVariant, variantLabel } from "@/lib/shop/products";
 import {
   FREE_SHIPPING_THRESHOLD,
   calcShipping,
@@ -94,7 +94,9 @@ export default function CartPage() {
                   >
                     {i.product.name}
                   </Link>
-                  <p className="text-xs text-gray-500">レンズカラー：{i.variant.label}</p>
+                  {variantLabel(i.variant) && (
+                    <p className="text-xs text-gray-500">{variantLabel(i.variant)}</p>
+                  )}
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <select

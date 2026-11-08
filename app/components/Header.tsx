@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import CartLink from "@/app/components/CartLink";
 
+// 日本語のファイル名は、そのままだとLinkヘッダーに入れられずエラーになるためエンコードする
+const LOGO_SRC = `/${encodeURIComponent("雪ともロゴ.png")}`;
+
 const NAV_ITEMS = [
   { label: "ホーム", href: "https://yukitomo.com/" },
   { label: "グループを探す", href: "/#groups", scroll: true },
@@ -29,7 +32,7 @@ export default function Header() {
       <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
         {/* ロゴ */}
         <a href="https://yukitomo.com/" className="shrink-0">
-          <img src="/雪ともロゴ.png" alt="雪とも" className="h-8 w-auto" />
+          <img src={LOGO_SRC} alt="雪とも" className="h-8 w-auto" />
         </a>
 
         {/* デスクトップナビ */}

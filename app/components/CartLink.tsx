@@ -9,6 +9,7 @@ export default function CartLink({ onClick }: { onClick?: () => void }) {
     <Link
       href="/shop/cart"
       onClick={onClick}
+      aria-label={count > 0 ? `カート（${count}点）` : "カート"}
       className="relative text-sm font-medium text-[#3d3d3d] hover:text-[#1a3060] transition-colors whitespace-nowrap"
     >
       カート

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { hasOptions, variantLabel, type Product } from "@/lib/shop/products";
 import { useCart } from "@/lib/shop/cart";
+import { SWATCH, btnPrimary, focusRing } from "../ui";
 
 function unique(values: string[]) {
   return Array.from(new Set(values));
@@ -54,29 +55,41 @@ export default function AddToCart({ product }: { product: Product }) {
     setter: (v: string) => void,
   ) {
     return (
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-bold text-[#3d3d3d] mb-1">
+      <fieldset className="flex flex-col gap-2.5">
+        <legend className="mb-2.5 flex items-baseline gap-2 text-sm font-bold text-[#3d3d3d]">
           {title}
-          <span className="text-red-500 ml-1 text-xs">必須</span>
+          <span className="text-xs font-normal text-gray-500">{selected || "選んでください"}</span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {options.map((o) => {
             const out = !isAvailable(o);
+            const active = o === selected;
             return (
               <button
                 key={o}
                 type="button"
                 disabled={out}
+                aria-pressed={active}
                 onClick={() => select(setter, o)}
-                className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
-                  o === selected
+                className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm transition-colors ${focusRing} ${
+                  active
                     ? "border-[#1a3060] bg-[#1a3060] text-white"
                     : out
-                      ? "border-gray-200 text-gray-300 line-through cursor-not-allowed"
+                      ? "cursor-not-allowed border-gray-200 text-gray-300"
                       : "border-gray-300 text-[#3d3d3d] hover:border-[#1a3060]"
                 }`}
               >
-                {o}
+                {SWATCH[o] && (
+                  <span
+                    aria-hidden
+                    className={`h-4 w-4 rounded-full border ${
+                      active ? "border-white/70" : "border-black/20"
+                    } ${out ? "opacity-40" : ""}`}
+                    style={{ background: SWATCH[o] }}
+                  />
+                )}
+                <span className={out ? "line-through" : ""}>{o}</span>
+                {out && <span className="text-[10px] no-underline">売切</span>}
               </button>
             );
           })}
@@ -86,18 +99,22 @@ export default function AddToCart({ product }: { product: Product }) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {optional && renderGroup("フレーム", frames, frame, frameAvailable, setFrame)}
-      {optional && renderGroup("レンズ", lenses, lens, lensAvailable, setLens)}
+    <div className="flex flex-col gap-6">
+      {optional && (
+        <div className="flex flex-col gap-5">
+          {renderGroup("フレーム", frames, frame, frameAvailable, setFrame)}
+          {renderGroup("レンズ", lenses, lens, lensAvailable, setLens)}
+        </div>
+      )}
 
       {variant && inStock && variant.stock <= 3 && (
-        <p className="text-xs text-orange-600">
+        <p className="text-sm text-orange-700">
           {variantLabel(variant)}
           {optional ? "：" : ""}残り{variant.stock}点
         </p>
       )}
       {variant && !inStock && (
-        <p className="text-xs text-red-600">
+        <p className="text-sm text-red-700">
           {optional ? "この組み合わせは売り切れです。" : "売り切れです。"}
         </p>
       )}
@@ -111,7 +128,7 @@ export default function AddToCart({ product }: { product: Product }) {
           value={qty}
           disabled={!inStock}
           onChange={(e) => setQty(Number(e.target.value))}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm disabled:bg-gray-50"
+          className={`min-h-11 rounded-lg border border-gray-300 bg-white px-3 text-sm disabled:bg-gray-50 ${focusRing}`}
         >
           {Array.from({ length: Math.max(max, 1) }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>
@@ -121,23 +138,28 @@ export default function AddToCart({ product }: { product: Product }) {
         </select>
       </div>
 
-      <button
-        type="button"
-        onClick={handleAdd}
-        disabled={!inStock}
-        className="w-full py-3 rounded-lg bg-[#1a3060] text-white font-bold text-sm disabled:bg-gray-300 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-      >
-        {optional && (!frame || !lens) ? "フレームとレンズを選択してください" : "カートに入れる"}
-      </button>
-
-      {added && (
-        <p className="text-sm text-[#3d3d3d]">
-          カートに追加しました。
-          <Link href="/shop/cart" className="text-[#1a3060] underline ml-2">
-            カートを見る
-          </Link>
-        </p>
-      )}
+      {/* スマホでは画面の下に固定して、いつでも押せるようにする */}
+      <div className="sticky bottom-0 z-10 -mx-6 border-t border-gray-100 bg-white/95 px-6 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+        <button type="button" onClick={handleAdd} disabled={!inStock} className={btnPrimary}>
+          {optional && (!frame || !lens)
+            ? !frame && !lens
+              ? "フレームとレンズを選んでください"
+              : !frame
+                ? "フレームを選んでください"
+                : "レンズを選んでください"
+            : !inStock
+              ? "売り切れ"
+              : "カートに入れる"}
+        </button>
+        {added && (
+          <p role="status" className="mt-2 text-center text-sm text-[#3d3d3d]">
+            カートに入れました。
+            <Link href="/shop/cart" className={`ml-2 text-[#1a3060] underline ${focusRing}`}>
+              カートを見る
+            </Link>
+          </p>
+        )}
+      </div>
     </div>
   );
 }

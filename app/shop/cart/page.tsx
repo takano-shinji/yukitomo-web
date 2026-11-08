@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/lib/shop/cart";
-import { findVariant, variantLabel } from "@/lib/shop/products";
+import { findVariant, mainImage, variantLabel } from "@/lib/shop/products";
 import {
   FREE_SHIPPING_THRESHOLD,
   calcShipping,
   formatYen,
 } from "@/lib/shop/shipping";
 import ProductImage from "../ProductImage";
+import { btnPrimary, focusRing } from "../ui";
 
 export default function CartPage() {
   const { lines, setQty, remove } = useCart();
@@ -68,42 +69,51 @@ export default function CartPage() {
   const total = subtotal + shipping;
   const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
 
+  const progress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10 flex flex-col gap-8">
+    <main className="max-w-5xl mx-auto px-6 py-8 md:py-12 flex flex-col gap-8">
       <h1 className="text-xl md:text-2xl font-bold text-[#3d3d3d]">カート</h1>
 
       {items.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <p className="text-sm text-gray-500">カートに商品がありません。</p>
-          <Link href="/shop" className="text-sm text-[#1a3060] underline">
-            ショップに戻る
+        <div className="flex flex-col items-center gap-5 rounded-2xl bg-[#f5f8fc] py-20 text-center">
+          <p className="text-sm text-gray-600">カートに商品がありません。</p>
+          <Link
+            href="/shop"
+            className={`inline-flex min-h-11 items-center rounded-lg bg-[#1a3060] px-6 text-sm font-bold text-white transition-colors hover:bg-[#14264d] ${focusRing}`}
+          >
+            商品を見る
           </Link>
         </div>
       ) : (
-        <>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,1fr)_340px] md:gap-12 md:items-start">
           <ul className="flex flex-col divide-y divide-gray-100 border-y border-gray-100">
             {items.map((i) => (
-              <li key={i.variantId} className="flex gap-4 py-5">
-                <div className="w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                  <ProductImage src={i.product.image} alt={i.product.name} />
-                </div>
-                <div className="flex-1 flex flex-col gap-2">
+              <li key={i.variantId} className="flex gap-4 py-6">
+                <Link
+                  href={`/shop/${i.product.id}`}
+                  className={`w-24 h-24 md:w-28 md:h-28 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 ${focusRing}`}
+                  aria-label={`${i.product.name}のページを見る`}
+                >
+                  <ProductImage src={mainImage(i.product)} alt="" fit="contain" />
+                </Link>
+                <div className="flex-1 flex flex-col gap-2 min-w-0">
                   <Link
                     href={`/shop/${i.product.id}`}
-                    className="text-sm font-bold text-[#3d3d3d] leading-relaxed hover:text-[#1a3060]"
+                    className={`text-sm font-bold text-[#3d3d3d] leading-relaxed hover:text-[#1a3060] ${focusRing}`}
                   >
                     {i.product.name}
                   </Link>
                   {variantLabel(i.variant) && (
-                    <p className="text-xs text-gray-500">{variantLabel(i.variant)}</p>
+                    <p className="text-xs text-gray-600">{variantLabel(i.variant)}</p>
                   )}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
                       <select
                         aria-label="数量"
                         value={i.qty}
                         onChange={(e) => setQty(i.variantId, Number(e.target.value))}
-                        className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                        className={`min-h-10 rounded-lg border border-gray-300 bg-white px-2.5 text-sm ${focusRing}`}
                       >
                         {Array.from({ length: Math.min(Math.max(i.available, i.qty), 10) }, (_, n) => n + 1).map(
                           (n) => (
@@ -116,12 +126,12 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => remove(i.variantId)}
-                        className="text-xs text-gray-400 underline hover:text-red-500"
+                        className={`text-xs text-gray-500 underline hover:text-red-600 ${focusRing}`}
                       >
                         削除
                       </button>
                     </div>
-                    <p className="text-sm font-bold text-[#3d3d3d]">
+                    <p className="text-base font-bold text-[#3d3d3d]">
                       {formatYen(i.product.price * i.qty)}
                     </p>
                   </div>
@@ -130,39 +140,66 @@ export default function CartPage() {
             ))}
           </ul>
 
-          <section className="flex flex-col gap-3 text-sm text-[#3d3d3d]">
-            <div className="flex justify-between">
-              <span>小計（税込）</span>
-              <span>{formatYen(subtotal)}</span>
+          <section
+            aria-label="ご注文の合計"
+            className="flex flex-col gap-4 rounded-2xl bg-[#f5f8fc] p-6 text-sm text-[#3d3d3d] md:sticky md:top-24"
+          >
+            <div className="flex flex-col gap-2">
+              {remaining > 0 ? (
+                <p className="text-xs text-gray-700">
+                  あと<strong className="text-[#1a3060]">{formatYen(remaining)}</strong>で送料無料になります
+                </p>
+              ) : (
+                <p className="text-xs font-bold text-[#1a3060]">送料無料です</p>
+              )}
+              <div
+                role="progressbar"
+                aria-label="送料無料までの金額"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+                className="h-1.5 overflow-hidden rounded-full bg-white"
+              >
+                <div
+                  className="h-full rounded-full bg-[#1a3060] transition-[width] duration-300 motion-reduce:transition-none"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>送料</span>
-              <span>{shipping === 0 ? "無料" : formatYen(shipping)}</span>
-            </div>
-            {remaining > 0 && (
-              <p className="text-xs text-orange-600">
-                あと{formatYen(remaining)}のご購入で送料無料になります。
+
+            <dl className="flex flex-col gap-3">
+              <div className="flex justify-between">
+                <dt>小計（税込）</dt>
+                <dd>{formatYen(subtotal)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>送料</dt>
+                <dd>{shipping === 0 ? "無料" : formatYen(shipping)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-[#dfe6f0] pt-4 text-base font-bold">
+                <dt>合計</dt>
+                <dd className="text-lg text-[#1a3060]">{formatYen(total)}</dd>
+              </div>
+            </dl>
+
+            {error && (
+              <p role="alert" className="text-sm text-red-700">
+                {error}
               </p>
             )}
-            <div className="flex justify-between border-t border-gray-100 pt-3 text-base font-bold">
-              <span>合計</span>
-              <span className="text-[#1a3060]">{formatYen(total)}</span>
-            </div>
+            <button
+              type="button"
+              onClick={handleCheckout}
+              disabled={submitting}
+              className={btnPrimary}
+            >
+              {submitting ? "決済ページへ移動中…" : "レジに進む"}
+            </button>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              お支払いとお届け先の入力は、Squareの安全な決済ページで行います。カード情報は当サイトに保存されません。
+            </p>
           </section>
-
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="button"
-            onClick={handleCheckout}
-            disabled={submitting}
-            className="w-full py-3 rounded-lg bg-[#1a3060] text-white font-bold text-sm disabled:bg-gray-300 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-          >
-            {submitting ? "決済ページへ移動中…" : "レジに進む（Squareで決済）"}
-          </button>
-          <p className="text-xs text-gray-500 text-center">
-            お支払いと配送先のご入力は、Squareの安全な決済ページで行います。
-          </p>
-        </>
+        </div>
       )}
     </main>
   );

@@ -14,7 +14,8 @@ function merge(products: Product[], stock: Record<string, number> | null): Produ
 export async function getProducts(options?: { fresh?: boolean }): Promise<Product[]> {
   try {
     return merge(PRODUCTS, await getStockMap(options));
-  } catch {
+  } catch (e) {
+    console.error("在庫の取得に失敗したため、在庫0として表示します", e);
     return PRODUCTS.map((p) => ({ ...p, variants: p.variants.map((v) => ({ ...v, stock: 0 })) }));
   }
 }

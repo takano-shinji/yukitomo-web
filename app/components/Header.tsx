@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import CartLink from "@/app/components/CartLink";
 
 const NAV_ITEMS = [
   { label: "ホーム", href: "https://yukitomo.com/" },
   { label: "グループを探す", href: "/#groups", scroll: true },
-  { label: "ショップ", href: "https://yakitomo.official.ec/" },
+  { label: "ショップ", href: "/shop" },
   { label: "お問い合わせ", href: "https://yukitomo.com/contact/" },
 ];
 
@@ -43,6 +44,7 @@ export default function Header() {
               {label}
             </Link>
           ))}
+          <CartLink />
         </nav>
 
         {/* ハンバーガーボタン（モバイルのみ） */}
@@ -70,6 +72,7 @@ export default function Header() {
               {label}
             </Link>
           ))}
+          <CartLink onClick={() => setMenuOpen(false)} />
         </nav>
       )}
     </header>

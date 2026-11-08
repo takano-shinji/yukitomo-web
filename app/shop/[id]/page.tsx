@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CATEGORY_LABEL, PRODUCTS, getProduct } from "@/lib/shop/products";
+import { CATEGORY_LABEL, PRODUCTS } from "@/lib/shop/products";
+import { getProductById } from "@/lib/shop/catalog";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, formatYen } from "@/lib/shop/shipping";
 import ProductImage from "../ProductImage";
 import AddToCart from "./AddToCart";
@@ -16,7 +17,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const product = getProduct(id);
+  const product = await getProductById(id);
   if (!product) return { title: "商品が見つかりません", robots: { index: false } };
   return {
     title: product.name,
@@ -25,9 +26,12 @@ export async function generateMetadata({
   };
 }
 
+// 在庫は常に最新（スプレッドシート）を表示する
+export const dynamic = "force-dynamic";
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = getProduct(id);
+  const product = await getProductById(id);
   if (!product) notFound();
 
   return (

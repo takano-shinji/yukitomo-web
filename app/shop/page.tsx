@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CATEGORY_LABEL, PRODUCTS } from "@/lib/shop/products";
+import { CATEGORY_LABEL } from "@/lib/shop/products";
+import { getProducts } from "@/lib/shop/catalog";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, formatYen } from "@/lib/shop/shipping";
 import ProductImage from "./ProductImage";
 
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/shop" },
 };
 
-export default function ShopPage() {
+// 在庫は常に最新（スプレッドシート）を表示する
+export const dynamic = "force-dynamic";
+
+export default async function ShopPage() {
+  const PRODUCTS = await getProducts();
   return (
     <main className="max-w-4xl mx-auto px-6 py-12 flex flex-col gap-10">
       <section className="text-center flex flex-col gap-3">

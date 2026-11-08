@@ -1,0 +1,103 @@
+/**
+ * 雪ともショップ 在庫・注文管理スクリプト（Google Apps Script）
+ *
+ * 使い方は docs/google-apps-script/README.md を参照。
+ * スクリプトプロパティ SECRET に、サイト側の STOCK_SHEET_SECRET と同じ値を設定すること。
+ *
+ * シート構成
+ *   「在庫」: A=variantId / B=商品名 / C=レンズカラー / D=在庫数（1行目は見出し）
+ *   「注文」: スクリプトが自動で追記する（1行目は見出し）
+ */
+const STOCK_SHEET = '在庫';
+const ORDER_SHEET = '注文';
+
+function doPost(e) {
+  let body;
+  try {
+    body = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return json_({ ok: false, error: 'bad_request' });
+  }
+
+  const secret = PropertiesService.getScriptProperties().getProperty('SECRET');
+  if (!secret || body.key !== secret) {
+    return json_({ ok: false, error: 'unauthorized' });
+  }
+
+  if (body.action === 'stock') return json_({ ok: true, stock: readStock_() });
+  if (body.action === 'order') return recordOrder_(body);
+  return json_({ ok: false, error: 'unknown_action' });
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
+    ContentService.MimeType.JSON
+  );
+}
+
+function readStock_() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(STOCK_SHEET);
+  const rows = sheet.getLastRow() >= 2 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues() : [];
+  const stock = {};
+  rows.forEach(function (r) {
+    if (r[0]) stock[String(r[0]).trim()] = Number(r[3]) || 0;
+  });
+  return stock;
+}
+
+/** 注文を記録し、在庫を減らす。同じ注文IDは二重に処理しない。 */
+function recordOrder_(body) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const stockSheet = ss.getSheetByName(STOCK_SHEET);
+    const orderSheet = ss.getSheetByName(ORDER_SHEET);
+
+    const orderId = String(body.orderId || '');
+    if (!orderId || !Array.isArray(body.items) || body.items.length === 0) {
+      return json_({ ok: false, error: 'bad_order' });
+    }
+
+    // 二重処理の防止（Webhookは再送されることがある）
+    const lastOrderRow = orderSheet.getLastRow();
+    if (lastOrderRow >= 2) {
+      const ids = orderSheet.getRange(2, 2, lastOrderRow - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === orderId) return json_({ ok: true, duplicate: true });
+      }
+    }
+
+    const lastStockRow = stockSheet.getLastRow();
+    const stockRows = lastStockRow >= 2 ? stockSheet.getRange(2, 1, lastStockRow - 1, 4).getValues() : [];
+    const now = new Date();
+    const out = [];
+
+    body.items.forEach(function (item) {
+      const variantId = String(item.variantId || '');
+      const qty = Number(item.qty) || 0;
+      var idx = -1;
+      for (var j = 0; j < stockRows.length; j++) {
+        if (String(stockRows[j][0]).trim() === variantId) { idx = j; break; }
+      }
+      var name = '', color = '', note = '';
+      if (idx === -1) {
+        note = '在庫シートに未登録';
+      } else {
+        name = stockRows[idx][1];
+        color = stockRows[idx][2];
+        const current = Number(stockRows[idx][3]) || 0;
+        if (current < qty) note = '在庫不足（要確認）';
+        const next = Math.max(0, current - qty);
+        stockSheet.getRange(idx + 2, 4).setValue(next);
+        stockRows[idx][3] = next;
+      }
+      out.push([now, orderId, variantId, name, color, qty, Number(item.amount) || 0, note]);
+    });
+
+    orderSheet.getRange(orderSheet.getLastRow() + 1, 1, out.length, 8).setValues(out);
+    return json_({ ok: true });
+  } finally {
+    lock.releaseLock();
+  }
+}

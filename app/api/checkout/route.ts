@@ -1,5 +1,6 @@
 import { findVariant } from "@/lib/shop/products";
 import { calcShipping } from "@/lib/shop/shipping";
+import { getStockMap } from "@/lib/shop/sheet";
 import { createPaymentLink, getSquareConfig } from "@/lib/shop/square";
 import { SITE_URL } from "@/lib/site";
 
@@ -23,6 +24,14 @@ export async function POST(request: Request) {
     return bad("カートが空です。");
   }
 
+  // 在庫はスプレッドシートの最新値で確認する（未設定ならコード内の初期値）
+  let stockMap: Record<string, number> | null;
+  try {
+    stockMap = await getStockMap({ fresh: true });
+  } catch {
+    return bad("在庫の確認に失敗しました。時間をおいてお試しください。", 503);
+  }
+
   // 価格・在庫はクライアントの値を信用せず、サーバー側のデータで検証する
   const items = [];
   for (const line of body.lines) {
@@ -35,10 +44,12 @@ export async function POST(request: Request) {
     }
     const found = findVariant(line.productId, line.variantId);
     if (!found) return bad("販売終了の商品がカートに含まれています。");
-    if (found.variant.stock < qty) {
+    const available = stockMap ? (stockMap[found.variant.id] ?? 0) : found.variant.stock;
+    if (available < qty) {
       return bad(`「${found.product.name}（${found.variant.label}）」の在庫が足りません。`, 409);
     }
     items.push({
+      variantId: found.variant.id,
       name: found.product.name,
       variationName: found.variant.label,
       quantity: qty,

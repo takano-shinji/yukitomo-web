@@ -16,6 +16,7 @@ export function getSquareConfig(): SquareConfig | null {
 }
 
 export type CheckoutLineItem = {
+  variantId: string;
   name: string;
   variationName: string;
   quantity: number;
@@ -39,6 +40,8 @@ export async function createPaymentLink(params: {
         name: i.name,
         variation_name: i.variationName,
         quantity: String(i.quantity),
+        // Webhookで注文を受け取ったとき、どの商品かを特定するために持たせる
+        metadata: { variant_id: i.variantId },
         base_price_money: { amount: i.unitPrice, currency: "JPY" },
       })),
     },
@@ -75,4 +78,31 @@ export async function createPaymentLink(params: {
     throw new Error("square_error");
   }
   return url;
+}
+
+export type SquareOrderLine = { variantId: string; qty: number; amount: number };
+
+/** 注文IDから、商品ごとの数量・金額を取得する（送料は含まない） */
+export async function getOrderLines(config: SquareConfig, orderId: string): Promise<SquareOrderLine[]> {
+  const res = await fetch(`${config.baseUrl}/v2/orders/${encodeURIComponent(orderId)}`, {
+    headers: { "Square-Version": config.version, Authorization: `Bearer ${config.token}` },
+    cache: "no-store",
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.order) {
+    console.error("Square getOrder failed", res.status, JSON.stringify(json?.errors ?? json));
+    throw new Error("square_error");
+  }
+  const lines: unknown[] = json.order.line_items ?? [];
+  return lines.flatMap((l) => {
+    const item = l as {
+      quantity?: string;
+      metadata?: Record<string, string>;
+      total_money?: { amount?: number };
+    };
+    const variantId = item.metadata?.variant_id;
+    const qty = Number(item.quantity);
+    if (!variantId || !Number.isInteger(qty)) return [];
+    return [{ variantId, qty, amount: Number(item.total_money?.amount ?? 0) }];
+  });
 }

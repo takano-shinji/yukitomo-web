@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/shop/cart";
 import { findVariant } from "@/lib/shop/products";
 import {
@@ -15,6 +15,18 @@ export default function CartPage() {
   const { lines, setQty, remove } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [stock, setStock] = useState<Record<string, number> | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/stock")
+      .then((r) => r.json())
+      .then((j) => alive && setStock(j.stock ?? null))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   async function handleCheckout() {
     setSubmitting(true);
@@ -46,7 +58,9 @@ export default function CartPage() {
 
   const items = lines.flatMap((l) => {
     const found = findVariant(l.productId, l.variantId);
-    return found ? [{ ...l, ...found }] : [];
+    if (!found) return [];
+    const available = stock ? (stock[l.variantId] ?? 0) : found.variant.stock;
+    return [{ ...l, ...found, available }];
   });
 
   const subtotal = items.reduce((sum, i) => sum + i.product.price * i.qty, 0);
@@ -89,7 +103,7 @@ export default function CartPage() {
                         onChange={(e) => setQty(i.variantId, Number(e.target.value))}
                         className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
                       >
-                        {Array.from({ length: Math.min(i.variant.stock, 10) }, (_, n) => n + 1).map(
+                        {Array.from({ length: Math.min(Math.max(i.available, i.qty), 10) }, (_, n) => n + 1).map(
                           (n) => (
                             <option key={n} value={n}>
                               {n}

@@ -29,13 +29,22 @@ export async function createPaymentLink(params: {
   items: CheckoutLineItem[];
   shippingFee: number;
   redirectUrl: string;
+  /** 紹介者コード（入力があったときだけ）。ステッカー同梱の目印になる */
+  referralCode?: string;
+  /** お知らせメールの受け取りに同意したか */
+  newsletter?: boolean;
 }): Promise<string> {
-  const { config, items, shippingFee, redirectUrl } = params;
+  const { config, items, shippingFee, redirectUrl, referralCode, newsletter } = params;
 
   const body = {
     idempotency_key: crypto.randomUUID(),
     order: {
       location_id: config.locationId,
+      ...(referralCode ? { reference_id: `紹介:${referralCode}`.slice(0, 40) } : {}),
+      metadata: {
+        ...(referralCode ? { referral_code: referralCode } : {}),
+        newsletter: newsletter ? "yes" : "no",
+      },
       line_items: items.map((i) => ({
         name: i.name,
         ...(i.variationName ? { variation_name: i.variationName } : {}),
@@ -82,8 +91,11 @@ export async function createPaymentLink(params: {
 
 export type SquareOrderLine = { variantId: string; qty: number; amount: number };
 
-/** 注文IDから、商品ごとの数量・金額を取得する（送料は含まない） */
-export async function getOrderLines(config: SquareConfig, orderId: string): Promise<SquareOrderLine[]> {
+/** 注文IDから、商品ごとの数量・金額と紹介者コードを取得する（送料は含まない） */
+export async function getOrder(
+  config: SquareConfig,
+  orderId: string,
+): Promise<{ lines: SquareOrderLine[]; referralCode: string; newsletter: boolean }> {
   const res = await fetch(`${config.baseUrl}/v2/orders/${encodeURIComponent(orderId)}`, {
     headers: { "Square-Version": config.version, Authorization: `Bearer ${config.token}` },
     cache: "no-store",
@@ -93,8 +105,10 @@ export async function getOrderLines(config: SquareConfig, orderId: string): Prom
     console.error("Square getOrder failed", res.status, JSON.stringify(json?.errors ?? json));
     throw new Error("square_error");
   }
-  const lines: unknown[] = json.order.line_items ?? [];
-  return lines.flatMap((l) => {
+  const rawLines: unknown[] = json.order.line_items ?? [];
+  const referralCode = String(json.order.metadata?.referral_code ?? "");
+  const newsletter = json.order.metadata?.newsletter === "yes";
+  const lines = rawLines.flatMap((l) => {
     const item = l as {
       quantity?: string;
       metadata?: Record<string, string>;
@@ -105,4 +119,5 @@ export async function getOrderLines(config: SquareConfig, orderId: string): Prom
     if (!variantId || !Number.isInteger(qty)) return [];
     return [{ variantId, qty, amount: Number(item.total_money?.amount ?? 0) }];
   });
+  return { lines, referralCode, newsletter };
 }

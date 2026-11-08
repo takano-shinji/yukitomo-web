@@ -4,7 +4,21 @@ import { getStockMap } from "@/lib/shop/sheet";
 import { createPaymentLink, getSquareConfig } from "@/lib/shop/square";
 import { SITE_URL } from "@/lib/site";
 
-type Body = { lines?: { variantId?: unknown; productId?: unknown; qty?: unknown }[] };
+type Body = {
+  lines?: { variantId?: unknown; productId?: unknown; qty?: unknown }[];
+  referralCode?: unknown;
+  newsletter?: unknown;
+};
+
+/** 紹介者コードを整える（全角→半角、前後の空白と制御文字を除去、30文字まで） */
+function cleanReferralCode(value: unknown): string {
+  if (typeof value !== "string") return "";
+  return value
+    .normalize("NFKC")
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim()
+    .slice(0, 30);
+}
 
 function bad(message: string, status = 400) {
   return Response.json({ error: message }, { status });
@@ -57,6 +71,8 @@ export async function POST(request: Request) {
     });
   }
 
+  const referralCode = cleanReferralCode(body.referralCode);
+
   const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
   const shippingFee = calcShipping(subtotal);
 
@@ -66,6 +82,8 @@ export async function POST(request: Request) {
       items,
       shippingFee,
       redirectUrl: `${SITE_URL}/shop/thanks`,
+      referralCode,
+      newsletter: body.newsletter === true,
     });
     return Response.json({ url });
   } catch {

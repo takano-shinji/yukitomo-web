@@ -10,12 +10,14 @@ import {
   formatYen,
 } from "@/lib/shop/shipping";
 import ProductImage from "../ProductImage";
-import { btnOnNavy, focusRing } from "../ui";
+import { btnOnNavy, focusRing, focusRingLight } from "../ui";
 
 export default function CartPage() {
   const { lines, setQty, remove } = useCart();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [newsletter, setNewsletter] = useState(false);
   const [stock, setStock] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
@@ -42,6 +44,8 @@ export default function CartPage() {
             variantId: l.variantId,
             qty: l.qty,
           })),
+          referralCode,
+          newsletter,
         }),
       });
       const json = await res.json().catch(() => null);
@@ -181,6 +185,38 @@ export default function CartPage() {
                 <dd className="text-lg">{formatYen(total)}</dd>
               </div>
             </dl>
+
+            <div className="flex flex-col gap-1.5 border-t border-white/25 pt-4">
+              <label htmlFor="referral" className="text-sm font-bold">
+                紹介者コード<span className="ml-1 text-xs font-normal text-white/75">（任意）</span>
+              </label>
+              <input
+                id="referral"
+                type="text"
+                value={referralCode}
+                maxLength={30}
+                autoComplete="off"
+                onChange={(e) => setReferralCode(e.target.value)}
+                className={`min-h-11 rounded-lg bg-white px-3 text-sm text-[#3d3d3d] placeholder:text-gray-400 ${focusRingLight}`}
+                placeholder="お持ちの方は入力してください"
+              />
+              <p className="text-xs leading-relaxed text-white/85">
+                入力すると、<strong className="text-white">雪ともステッカーをプレゼント</strong>します。
+              </p>
+            </div>
+
+            <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-white/90">
+              <input
+                type="checkbox"
+                checked={newsletter}
+                onChange={(e) => setNewsletter(e.target.checked)}
+                className={`mt-0.5 h-4 w-4 shrink-0 accent-white ${focusRingLight}`}
+              />
+              <span>
+                雪ともからの新商品・イベントのお知らせメールを受け取る
+                <span className="text-white/70">（決済ページで入力するメールアドレスに送ります。いつでも停止できます）</span>
+              </span>
+            </label>
 
             {error && (
               <p role="alert" className="rounded-lg bg-white px-3 py-2 text-sm text-red-700">

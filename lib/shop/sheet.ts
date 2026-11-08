@@ -80,6 +80,9 @@ export async function getStockMap(options?: { fresh?: boolean }): Promise<StockM
 export async function recordOrder(order: {
   orderId: string;
   items: { variantId: string; qty: number; amount: number }[];
+  referralCode?: string;
+  email?: string;
+  newsletter?: boolean;
 }) {
   const json = await call({ action: "order", ...order });
   cache = null;

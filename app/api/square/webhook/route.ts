@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { recordOrder } from "@/lib/shop/sheet";
-import { getOrderLines, getSquareConfig } from "@/lib/shop/square";
+import { getOrder, getSquareConfig } from "@/lib/shop/square";
 
 function verifySignature(rawBody: string, signature: string | null): boolean {
   const key = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     return new Response("invalid signature", { status: 401 });
   }
 
-  let event: { type?: string; data?: { object?: { payment?: { status?: string; order_id?: string } } } };
+  let event: { type?: string; data?: { object?: { payment?: { status?: string; order_id?: string; buyer_email_address?: string } } } };
   try {
     event = JSON.parse(rawBody);
   } catch {
@@ -35,8 +35,16 @@ export async function POST(request: Request) {
   if (!config) return new Response("not configured", { status: 503 });
 
   try {
-    const items = await getOrderLines(config, payment.order_id);
-    if (items.length > 0) await recordOrder({ orderId: payment.order_id, items });
+    const { lines: items, referralCode, newsletter } = await getOrder(config, payment.order_id);
+    if (items.length > 0) {
+      await recordOrder({
+        orderId: payment.order_id,
+        items,
+        referralCode,
+        email: payment.buyer_email_address ?? "",
+        newsletter,
+      });
+    }
     return new Response("ok", { status: 200 });
   } catch {
     // 5xx を返すと Square が再送する。注文IDで二重処理は防止済み

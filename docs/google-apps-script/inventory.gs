@@ -6,10 +6,13 @@
  *
  * シート構成
  *   「在庫」: A=variantId / B=商品名 / C=フレーム / D=レンズ / E=在庫数（1行目は見出し）
- *   「注文」: スクリプトが自動で追記する（1行目は見出し）
+ *   「注文」: スクリプトが自動で追記する（1行目は見出し。J列は紹介者コード、K列はメール、L列はお知らせメールの可否）
  */
 const STOCK_SHEET = '在庫';
 const ORDER_SHEET = '注文';
+
+// 注文が入ったときに通知メールを送る宛先
+const NOTIFY_TO = ['natsumi19870721@gmail.com', 'mybeemate@gmail.com'];
 
 function doPost(e) {
   let body;
@@ -72,6 +75,9 @@ function recordOrder_(body) {
     const stockRows = lastStockRow >= 2 ? stockSheet.getRange(2, 1, lastStockRow - 1, 5).getValues() : [];
     const now = new Date();
     const out = [];
+    const referral = String(body.referralCode || '').trim();
+    const email = String(body.email || '').trim();
+    const newsletter = body.newsletter ? 'あり' : 'なし';
 
     body.items.forEach(function (item) {
       const variantId = String(item.variantId || '');
@@ -93,12 +99,56 @@ function recordOrder_(body) {
         stockSheet.getRange(idx + 2, 5).setValue(next);
         stockRows[idx][4] = next;
       }
-      out.push([now, orderId, variantId, name, frame, lens, qty, Number(item.amount) || 0, note]);
+      out.push([now, orderId, variantId, name, frame, lens, qty, Number(item.amount) || 0, note, referral, email, newsletter]);
     });
 
-    orderSheet.getRange(orderSheet.getLastRow() + 1, 1, out.length, 9).setValues(out);
+    orderSheet.getRange(orderSheet.getLastRow() + 1, 1, out.length, 12).setValues(out);
+    notify_(orderId, out, ss.getUrl());
     return json_({ ok: true });
   } finally {
     lock.releaseLock();
   }
+}
+
+/** 注文の通知メール。失敗しても注文の記録は止めない。 */
+function notify_(orderId, rows, sheetUrl) {
+  try {
+    const referral = rows[0][9] || '';
+    const email = rows[0][10] || '';
+    const newsletter = rows[0][11] || 'なし';
+    const total = rows.reduce(function (sum, r) { return sum + r[7]; }, 0);
+    const warn = rows.some(function (r) { return r[8]; });
+    const lines = rows.map(function (r) {
+      const label = [r[3], r[4], r[5]].filter(String).join(' / ') || r[2];
+      return '・' + label + ' × ' + r[6] + '（' + r[7].toLocaleString() + '円）' + (r[8] ? ' ※' + r[8] : '');
+    });
+    const body = [
+      '雪ともショップに注文が入りました。',
+      '',
+      lines.join('\n'),
+      '',
+      '商品合計：' + total.toLocaleString() + '円（送料は別）',
+      '注文ID：' + orderId,
+      '紹介者コード：' + (referral || 'なし'),
+      'お客さんのメール：' + (email || '（不明）') + '／お知らせメール：' + newsletter,
+      referral ? '★ 雪ともステッカーを同梱してください' : '',
+      '',
+      'お届け先は、Squareダッシュボードの注文で確認してください。',
+      'https://squareup.com/dashboard/orders/overview',
+      '',
+      '在庫・注文シート：' + sheetUrl,
+    ].join('\n');
+    MailApp.sendEmail({
+      to: NOTIFY_TO.join(','),
+      subject: (warn ? '【在庫要確認】' : '') + '【雪とも】新しい注文が入りました',
+      body: body,
+    });
+  } catch (err) {
+    console.error('notify failed', err);
+  }
+}
+
+/** 初回だけ手で実行する。メール送信の権限をGoogleに許可するためのもの（メールは送らない）。 */
+function authorizeMail() {
+  console.log('メールの残り送信可能数：' + MailApp.getRemainingDailyQuota());
 }

@@ -65,7 +65,8 @@ export async function getStockMap(options?: { fresh?: boolean }): Promise<StockM
     if (process.env.NODE_ENV === "production") throw new Error("sheet_not_configured");
     return null;
   }
-  if (options?.fresh) return fetchStock();
+  // 決済前の確認でも、取得中のものがあれば相乗りして、スプレッドシートへの同時呼び出しを増やさない
+  if (options?.fresh) return refresh();
   if (cache) {
     const age = Date.now() - cache.at;
     if (age < FRESH_MS) return cache.stock;

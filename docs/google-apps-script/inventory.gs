@@ -38,6 +38,12 @@ function json_(obj) {
   );
 }
 
+/** お客さん入力の文字を、シートに書いても数式として実行されないようにする。 */
+function safeText_(value) {
+  const s = String(value || '').trim();
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+
 function readStock_() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(STOCK_SHEET);
   const rows = sheet.getLastRow() >= 2 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues() : [];
@@ -75,8 +81,8 @@ function recordOrder_(body) {
     const stockRows = lastStockRow >= 2 ? stockSheet.getRange(2, 1, lastStockRow - 1, 5).getValues() : [];
     const now = new Date();
     const out = [];
-    const referral = String(body.referralCode || '').trim();
-    const email = String(body.email || '').trim();
+    const referral = safeText_(body.referralCode);
+    const email = safeText_(body.email);
     const newsletter = body.newsletter ? 'あり' : 'なし';
 
     body.items.forEach(function (item) {

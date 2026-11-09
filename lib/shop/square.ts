@@ -95,7 +95,7 @@ export type SquareOrderLine = { variantId: string; qty: number; amount: number }
 export async function getOrder(
   config: SquareConfig,
   orderId: string,
-): Promise<{ lines: SquareOrderLine[]; referralCode: string; newsletter: boolean }> {
+): Promise<{ lines: SquareOrderLine[]; referralCode: string; newsletter: boolean; email: string }> {
   const res = await fetch(`${config.baseUrl}/v2/orders/${encodeURIComponent(orderId)}`, {
     headers: { "Square-Version": config.version, Authorization: `Bearer ${config.token}` },
     cache: "no-store",
@@ -119,5 +119,9 @@ export async function getOrder(
     if (!variantId || !Number.isInteger(qty)) return [];
     return [{ variantId, qty, amount: Number(item.total_money?.amount ?? 0) }];
   });
-  return { lines, referralCode, newsletter };
+  // お届け先のメールアドレスは、配送情報の受取人に入っている
+  const fulfillments: { shipment_details?: { recipient?: { email_address?: string } } }[] =
+    json.order.fulfillments ?? [];
+  const email = fulfillments.map((f) => f.shipment_details?.recipient?.email_address).find(Boolean) ?? "";
+  return { lines, referralCode, newsletter, email };
 }

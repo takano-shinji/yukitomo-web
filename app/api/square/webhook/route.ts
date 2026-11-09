@@ -35,13 +35,13 @@ export async function POST(request: Request) {
   if (!config) return new Response("not configured", { status: 503 });
 
   try {
-    const { lines: items, referralCode, newsletter } = await getOrder(config, payment.order_id);
+    const { lines: items, referralCode, newsletter, email } = await getOrder(config, payment.order_id);
     if (items.length > 0) {
       await recordOrder({
         orderId: payment.order_id,
         items,
         referralCode,
-        email: payment.buyer_email_address ?? "",
+        email: email || payment.buyer_email_address || "",
         newsletter,
       });
     }

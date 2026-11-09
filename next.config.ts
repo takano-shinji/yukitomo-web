@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { assertProductionEnv } from "./lib/env";
+
+assertProductionEnv();
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },

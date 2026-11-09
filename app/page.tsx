@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { searchGroups } from "@/lib/api";
-import { HERO_BG } from "@/lib/site";
+import { HERO_BG, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { FAQS } from "@/lib/faq";
+import JsonLd from "@/app/components/JsonLd";
 import GroupsSection from "@/app/components/GroupsSection";
 import AppBadges from "@/app/components/AppBadges";
 import FaqSection from "@/app/components/FaqSection";
@@ -9,11 +11,41 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: SITE_DESCRIPTION,
+      inLanguage: "ja",
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/${encodeURIComponent("雪ともロゴ.png")}`,
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQS.map(({ q, a }) => ({
+        "@type": "Question",
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a },
+      })),
+    },
+  ],
+};
+
 export default async function Home() {
   const groups = await searchGroups();
 
   return (
     <main className="flex flex-col">
+      <JsonLd data={jsonLd} />
       {/* Section 1: キャッチコピー */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 md:px-12 bg-white">
         <img src="/雪ともロゴ.png" alt="雪とも" className="w-32 md:w-40 mb-8 md:mb-10" />

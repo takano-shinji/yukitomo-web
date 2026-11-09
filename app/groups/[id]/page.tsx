@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGroup } from "@/lib/api";
 import { LEVEL_RANGE_LABEL, PREFECTURE_LABEL, scheduleLocation } from "@/lib/types";
-import { HERO_BG, SITE_NAME } from "@/lib/site";
+import { HERO_BG, SITE_NAME, SITE_URL } from "@/lib/site";
+import JsonLd from "@/app/components/JsonLd";
 import OwnerCta from "./OwnerCta";
 import AppBadges from "@/app/components/AppBadges";
 
@@ -75,8 +76,32 @@ export default async function GroupPage({
   const prefectureName = group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] : undefined;
   const levelLabel = group.levelRange != null ? LEVEL_RANGE_LABEL[group.levelRange] : undefined;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SportsOrganization",
+        "@id": `${SITE_URL}/groups/${group.groupId}#group`,
+        name: group.groupName,
+        url: `${SITE_URL}/groups/${group.groupId}`,
+        description: toDescription(group.recruitmentMessage) || toDescription(group.profile) || undefined,
+        image: group.coverImageUrl ?? group.thumbnailImageUrl ?? group.galleryImages[0]?.imageURL,
+        sport: "Skiing and Snowboarding",
+        areaServed: prefectureName,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: group.groupName, item: `${SITE_URL}/groups/${group.groupId}` },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
+      <JsonLd data={jsonLd} />
       {/* カバー画像 + グループヘッダー */}
       <div className="relative w-full aspect-video bg-gray-200">
         {coverImage && (

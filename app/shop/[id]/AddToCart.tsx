@@ -100,6 +100,11 @@ export default function AddToCart({ product }: { product: Product }) {
         </fieldset>
       )}
 
+      {!optional && variant && inStock && (
+        <p className={`text-sm ${variant.stock <= 3 ? "text-orange-700" : "text-[#3d3d3d]"}`}>
+          在庫 {variant.stock}点
+        </p>
+      )}
       {variant && !inStock && (
         <p className="text-sm text-red-700">
           {optional ? "この組み合わせは売り切れです。" : "売り切れです。"}

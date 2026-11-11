@@ -92,6 +92,11 @@ export default async function ShopPage() {
                 </h2>
                 <p className="text-sm text-gray-600 leading-relaxed">{p.summary}</p>
                 {optionSummary(p) && <p className="text-xs text-gray-500">{optionSummary(p)}</p>}
+                {!soldOut && (
+                  <p className="text-xs text-gray-500">
+                    在庫 {p.variants.reduce((sum, v) => sum + Math.max(v.stock, 0), 0)}点
+                  </p>
+                )}
                 <p className="mt-1 text-lg font-bold text-[#1a3060]">
                   {formatYen(p.price)}
                   <span className="text-xs font-normal text-gray-500 ml-1">税込</span>

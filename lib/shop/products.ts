@@ -48,7 +48,7 @@ export const CATEGORY_LABEL: Record<Product["category"], string> = {
 export const PRODUCTS: Product[] = [
   {
     id: "sfera2",
-    images: ["/shop/sfera2/2.jpg", "/shop/sfera2/1.jpg", "/shop/sfera2/flipup.jpg", "/shop/sfera2/uc.jpg", "/shop/sfera2/lens-all.jpg", "/shop/sfera2/3.jpg", "/shop/sfera2/4.jpg"],
+    images: ["/shop/sfera2/2.jpg", "/shop/sfera2/1.jpg", "/shop/sfera2/flipup.jpg", "/shop/sfera2/uc2.jpg", "/shop/sfera2/lens-all.jpg", "/shop/sfera2/3.jpg", "/shop/sfera2/4.jpg"],
     name: "【Adn】SferaⅡ 球面フリップアップゴーグル",
     brand: "Adn",
     category: "goggles",
@@ -56,7 +56,7 @@ export const PRODUCTS: Product[] = [
     summary: "ウルトラコントラスト調光レンズ搭載の球面フリップタイプ。",
     description:
       "ウルトラコントラスト（UC）調光レンズとフリップアップ機構を備えた球面タイプのゴーグル。光をコントロールして、雪面の凹凸やライディングラインをくっきり表示します。バンド・スポンジの交換に対応し、専用ポーチが付属します。",
-    detailImages: ["/shop/sfera2/uc.jpg"],
+    detailImages: ["/shop/sfera2/uc2.jpg"],
     notice:
       "※レンズはウルトラコントラスト（UC）レンズです。掲載の商品写真の一部は、レンズの表記が旧仕様のものを含みます。",
     variants: [
@@ -70,7 +70,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "aereo2",
-    images: ["/shop/aereo2/1.jpg", "/shop/aereo2/2.jpg", "/shop/aereo2/4.jpg", "/shop/aereo2/uc.jpg", "/shop/aereo2/lens-all.jpg", "/shop/aereo2/3.jpg", "/shop/aereo2/5.jpg"],
+    images: ["/shop/aereo2/1.jpg", "/shop/aereo2/2.jpg", "/shop/aereo2/4.jpg", "/shop/aereo2/uc2.jpg", "/shop/aereo2/lens-all.jpg", "/shop/aereo2/3.jpg", "/shop/aereo2/5.jpg"],
     name: "【Adn】AereoⅡ 平面フリップアップゴーグル",
     brand: "Adn",
     category: "goggles",
@@ -78,7 +78,7 @@ export const PRODUCTS: Product[] = [
     summary: "ウルトラコントラスト調光レンズ搭載の平面フリップタイプ。",
     description:
       "ウルトラコントラスト（UC）調光レンズとフリップアップ機構を備えた平面タイプのゴーグル。光をコントロールして、雪面の凹凸やライディングラインをくっきり表示します。バンド・スポンジの交換に対応し、専用ポーチが付属します。",
-    detailImages: ["/shop/aereo2/uc.jpg"],
+    detailImages: ["/shop/aereo2/uc2.jpg"],
     notice:
       "※レンズはウルトラコントラスト（UC）レンズです。掲載の商品写真の一部は、レンズの表記が旧仕様のものを含みます。",
     variants: [

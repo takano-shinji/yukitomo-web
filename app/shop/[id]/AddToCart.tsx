@@ -6,37 +6,35 @@ import { hasOptions, variantLabel, type Product } from "@/lib/shop/products";
 import { useCart } from "@/lib/shop/cart";
 import { SWATCH, btnPrimary, focusRing, linkBtnPrimary, linkBtnSecondary } from "../ui";
 
-function unique(values: string[]) {
-  return Array.from(new Set(values));
-}
-
 export default function AddToCart({ product }: { product: Product }) {
   const { add } = useCart();
-  const [frame, setFrame] = useState("");
-  const [lens, setLens] = useState("");
+  const [variantId, setVariantId] = useState("");
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
   const optional = hasOptions(product);
-  const frames = unique(product.variants.flatMap((v) => (v.frame ? [v.frame] : [])));
-  const lenses = unique(product.variants.flatMap((v) => (v.lens ? [v.lens] : [])));
-
-  // 相手側の選択と組み合わせたときに在庫があるか
-  const frameAvailable = (f: string) =>
-    product.variants.some((v) => v.frame === f && (!lens || v.lens === lens) && v.stock > 0);
-  const lensAvailable = (l: string) =>
-    product.variants.some((v) => v.lens === l && (!frame || v.frame === frame) && v.stock > 0);
 
   const variant = optional
-    ? frame && lens
-      ? product.variants.find((v) => v.frame === frame && v.lens === lens)
-      : undefined
+    ? product.variants.find((v) => v.id === variantId)
     : product.variants[0];
   const inStock = !!variant && variant.stock > 0;
   const max = variant ? Math.min(variant.stock, 10) : 1;
 
-  function select(setter: (v: string) => void, value: string) {
-    setter(value);
+  function swatch(name: string, active: boolean, out: boolean) {
+    if (!SWATCH[name]) return null;
+    return (
+      <span
+        aria-hidden
+        className={`h-4 w-4 shrink-0 rounded-full border ${
+          active ? "border-white/70" : "border-black/20"
+        } ${out ? "opacity-40" : ""}`}
+        style={{ background: SWATCH[name] }}
+      />
+    );
+  }
+
+  function selectVariant(id: string) {
+    setVariantId(id);
     setQty(1);
     setAdded(false);
   }
@@ -47,72 +45,61 @@ export default function AddToCart({ product }: { product: Product }) {
     setAdded(true);
   }
 
-  function renderGroup(
-    title: string,
-    options: string[],
-    selected: string,
-    isAvailable: (o: string) => boolean,
-    setter: (v: string) => void,
-  ) {
-    return (
-      <fieldset className="flex flex-col gap-2.5">
-        <legend className="mb-2.5 flex items-baseline gap-2 text-sm font-bold text-[#3d3d3d]">
-          {title}
-          <span className="text-xs font-normal text-gray-500">{selected || "選んでください"}</span>
-        </legend>
-        <div className="flex flex-wrap gap-2">
-          {options.map((o) => {
-            const out = !isAvailable(o);
-            const active = o === selected;
-            return (
-              <button
-                key={o}
-                type="button"
-                disabled={out}
-                aria-pressed={active}
-                onClick={() => select(setter, o)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm transition-colors ${focusRing} ${
-                  active
-                    ? "border-[#1a3060] bg-[#1a3060] text-white"
-                    : out
-                      ? "cursor-not-allowed border-gray-200 text-gray-300"
-                      : "border-gray-300 text-[#3d3d3d] hover:border-[#1a3060]"
-                }`}
-              >
-                {SWATCH[o] && (
-                  <span
-                    aria-hidden
-                    className={`h-4 w-4 rounded-full border ${
-                      active ? "border-white/70" : "border-black/20"
-                    } ${out ? "opacity-40" : ""}`}
-                    style={{ background: SWATCH[o] }}
-                  />
-                )}
-                <span className={out ? "line-through" : ""}>{o}</span>
-                {out && <span className="text-[10px] no-underline">売切</span>}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       {optional && (
-        <div className="flex flex-col gap-5">
-          {renderGroup("フレーム", frames, frame, frameAvailable, setFrame)}
-          {renderGroup("レンズ", lenses, lens, lensAvailable, setLens)}
-        </div>
+        <fieldset className="flex flex-col gap-2.5">
+          <legend className="mb-2.5 text-sm font-bold text-[#3d3d3d]">
+            種類を選んでください（在庫数を確認できます）
+          </legend>
+          <div className="flex flex-col gap-2">
+            {product.variants.map((v) => {
+              const out = v.stock <= 0;
+              const active = v.id === variantId;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  disabled={out}
+                  aria-pressed={active}
+                  onClick={() => selectVariant(v.id)}
+                  className={`flex min-h-14 items-center justify-between gap-3 rounded-lg border px-4 py-2 text-left text-sm transition-colors ${focusRing} ${
+                    active
+                      ? "border-[#1a3060] bg-[#1a3060] text-white"
+                      : out
+                        ? "cursor-not-allowed border-gray-200 text-gray-300"
+                        : "border-gray-300 text-[#3d3d3d] hover:border-[#1a3060]"
+                  }`}
+                >
+                  <span className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${out ? "line-through" : "font-bold"}`}>
+                    {v.frame && (
+                      <>
+                        {swatch(v.frame, active, out)}
+                        <span>フレーム:{v.frame}</span>
+                      </>
+                    )}
+                    {v.frame && v.lens && <span>/</span>}
+                    {v.lens && (
+                      <>
+                        {swatch(v.lens, active, out)}
+                        <span>レンズ:{v.lens}</span>
+                      </>
+                    )}
+                  </span>
+                  <span
+                    className={`shrink-0 text-xs ${
+                      active ? "text-white" : v.stock <= 3 && !out ? "text-orange-700" : ""
+                    }`}
+                  >
+                    {out ? "売切" : `在庫 ${v.stock}点`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
       )}
 
-      {variant && inStock && variant.stock <= 3 && (
-        <p className="text-sm text-orange-700">
-          {variantLabel(variant)}
-          {optional ? "：" : ""}残り{variant.stock}点
-        </p>
-      )}
       {variant && !inStock && (
         <p className="text-sm text-red-700">
           {optional ? "この組み合わせは売り切れです。" : "売り切れです。"}
@@ -141,12 +128,8 @@ export default function AddToCart({ product }: { product: Product }) {
       {/* スマホでは画面の下に固定して、いつでも押せるようにする */}
       <div className="sticky bottom-0 z-10 -mx-6 border-t border-gray-100 bg-white/95 px-6 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <button type="button" onClick={handleAdd} disabled={!inStock} className={btnPrimary}>
-          {optional && (!frame || !lens)
-            ? !frame && !lens
-              ? "フレームとレンズを選んでください"
-              : !frame
-                ? "フレームを選んでください"
-                : "レンズを選んでください"
+          {optional && !variant
+            ? "種類を選んでください"
             : !inStock
               ? "売り切れ"
               : "カートに入れる"}

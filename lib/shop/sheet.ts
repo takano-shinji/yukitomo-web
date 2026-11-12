@@ -1,4 +1,7 @@
 import "server-only";
+import { revalidateTag, unstable_cache } from "next/cache";
+
+const STOCK_TAG = "stock";
 
 type StockMap = Record<string, number>;
 
@@ -31,33 +34,35 @@ async function call(body: Record<string, unknown>) {
   return json;
 }
 
-let cache: { at: number; stock: StockMap } | null = null;
 let refreshing: Promise<StockMap> | null = null;
-// この間は取得し直さない / この間は古い在庫を先に出して、裏で取得し直す
-const FRESH_MS = 20_000;
-const STALE_MS = 10 * 60_000;
 
-async function fetchStock(): Promise<StockMap> {
-  const json = await call({ action: "stock" });
-  cache = { at: Date.now(), stock: json.stock as StockMap };
-  return cache.stock;
-}
-
-/** 同時に何度も取得しないよう、取得中ならその結果を共有する */
+/** 同時に何度も取得しないよう、取得中ならその結果を共有する（決済前の確認用） */
 function refresh(): Promise<StockMap> {
   if (!refreshing) {
-    refreshing = fetchStock().finally(() => {
-      refreshing = null;
-    });
+    refreshing = call({ action: "stock" })
+      .then((json) => json.stock as StockMap)
+      .finally(() => {
+        refreshing = null;
+      });
   }
   return refreshing;
 }
 
 /**
+ * 表示用の在庫。Next.js のデータキャッシュに載せるので、サーバーレスのインスタンスが
+ * 入れ替わっても共有される。20秒を過ぎたら、古い在庫を先に返して裏で取得し直す。
+ */
+const getCachedStock = unstable_cache(
+  async (): Promise<StockMap> => (await call({ action: "stock" })).stock as StockMap,
+  ["shop-stock"],
+  { revalidate: 20, tags: [STOCK_TAG] },
+);
+
+/**
  * variantId → 在庫数。開発中でスプレッドシート未設定のときは null（コード内の初期値を使う）。
  * 設定済みで取得に失敗した場合は例外を投げる（古い在庫で販売しないため）。
  * fresh=true でキャッシュを使わず最新を取得する（決済前の確認用）。
- * スプレッドシートの応答は数秒かかるため、通常の表示では少し古い在庫を先に返し、裏で更新する。
+ * スプレッドシートの応答は数秒かかるため、通常の表示ではキャッシュした在庫を返す。
  */
 export async function getStockMap(options?: { fresh?: boolean }): Promise<StockMap | null> {
   if (!isSheetConfigured()) {
@@ -65,17 +70,8 @@ export async function getStockMap(options?: { fresh?: boolean }): Promise<StockM
     if (process.env.NODE_ENV === "production") throw new Error("sheet_not_configured");
     return null;
   }
-  // 決済前の確認でも、取得中のものがあれば相乗りして、スプレッドシートへの同時呼び出しを増やさない
   if (options?.fresh) return refresh();
-  if (cache) {
-    const age = Date.now() - cache.at;
-    if (age < FRESH_MS) return cache.stock;
-    if (age < STALE_MS) {
-      refresh().catch(() => {});
-      return cache.stock;
-    }
-  }
-  return refresh();
+  return getCachedStock();
 }
 
 export async function recordOrder(order: {
@@ -86,6 +82,7 @@ export async function recordOrder(order: {
   newsletter?: boolean;
 }) {
   const json = await call({ action: "order", ...order });
-  cache = null;
+  // 注文が入ったら、表示用の在庫キャッシュをすぐ捨てる
+  revalidateTag(STOCK_TAG, { expire: 0 });
   return json as { ok: true; duplicate?: boolean };
 }

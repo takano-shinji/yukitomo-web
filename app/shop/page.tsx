@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { CATEGORY_LABEL, hasOptions, mainImage, type Product } from "@/lib/shop/products";
 import { getProducts } from "@/lib/shop/catalog";
@@ -34,18 +35,24 @@ export default async function ShopPage() {
       {/* ヒーロー：写真はそのまま見せて、見出しはネイビーのパネルを重ねる */}
       <section className="relative">
         <div className="relative w-full overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] bg-gray-100">
-          <img
+          <Image
             src="/shop/hero.jpg"
             alt="新雪のゲレンデと青空"
+            fill
+            priority
+            sizes="100vw"
             className="shop-hero-zoom absolute inset-0 h-full w-full object-cover [filter:brightness(1.08)_contrast(1.04)_saturate(1.12)]"
           />
         </div>
         <div className="relative z-10 -mt-20 md:-mt-28 mx-4 sm:mx-6 md:mx-auto md:w-full md:max-w-4xl md:px-6">
           <div className="flex max-w-md flex-col gap-4 rounded-2xl bg-white p-6 shadow-xl shadow-black/20 md:p-8">
             <h1 className="flex flex-col gap-1">
-              <img
+              <Image
                 src="/shop/logo.png"
                 alt="yukitomo"
+                width={666}
+                height={375}
+                sizes="224px"
                 className="-mx-2 -my-3 w-48 md:w-56 h-auto"
               />
               <span className="text-lg font-bold tracking-wider text-[#1a3060] md:text-xl">
@@ -77,7 +84,7 @@ export default async function ShopPage() {
             >
               <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
                 <div className="h-full w-full transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
-                  <ProductImage src={mainImage(p)} alt={p.name} />
+                  <ProductImage src={mainImage(p)} alt={p.name} sizes="(min-width: 640px) 400px, 100vw" />
                 </div>
                 {soldOut && (
                   <span className="absolute top-3 left-3 bg-[#3d3d3d] text-white text-xs px-2 py-1 rounded">

@@ -1,22 +1,34 @@
+import Image from "next/image";
+
 export default function ProductImage({
   src,
   alt,
   fit = "cover",
   onLoad,
+  sizes = "(min-width: 768px) 50vw, 100vw",
+  priority = false,
 }: {
   src?: string;
   alt: string;
   fit?: "cover" | "contain";
   onLoad?: React.ReactEventHandler<HTMLImageElement>;
+  /** 画面に出る大きさの目安。小さく出す所は小さく指定して、読み込む画像を軽くする */
+  sizes?: string;
+  priority?: boolean;
 }) {
   if (src) {
     return (
-      <img
-        src={src}
-        alt={alt}
-        onLoad={onLoad}
-        className={`w-full h-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
-      />
+      <div className="relative w-full h-full">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          priority={priority}
+          onLoad={onLoad}
+          className={fit === "contain" ? "object-contain" : "object-cover"}
+        />
+      </div>
     );
   }
   return (

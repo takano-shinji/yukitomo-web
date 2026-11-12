@@ -7,7 +7,8 @@ const APP_VERSION = "11.23.45";
 
 const requestInit: RequestInit = {
   headers: { "App-Version": APP_VERSION },
-  cache: "no-store",
+  // 60秒キャッシュ。期限が切れても古い内容を先に返して、裏で取得し直す
+  next: { revalidate: 60 },
 };
 
 /** GET /web/searchGroup（認証不要）。公開グループの一覧を返す。 */

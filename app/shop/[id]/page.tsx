@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL, PRODUCTS } from "@/lib/shop/products";
@@ -78,12 +79,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       </div>
 
       {product.detailImages?.map((src) => (
-        <img
+        <Image
           key={src}
           src={src}
           alt={`${product.name} の特長`}
-          className="w-full max-w-2xl mx-auto rounded-xl border border-gray-100"
-          loading="lazy"
+          width={1600}
+          height={2261}
+          sizes="(min-width: 672px) 672px, 100vw"
+          className="w-full h-auto max-w-2xl mx-auto rounded-xl border border-gray-100"
         />
       ))}
     </main>

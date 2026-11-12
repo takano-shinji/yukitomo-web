@@ -34,6 +34,7 @@ export default function Gallery({ images, alt }: { images?: string[]; alt: strin
               src={current}
               alt={alt}
               fit="contain"
+              priority
               onLoad={(e) => {
                 const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
                 if (w && h) setRatios((r) => (r[current] ? r : { ...r, [current]: w / h }));
@@ -57,7 +58,7 @@ export default function Gallery({ images, alt }: { images?: string[]; alt: strin
                 i === index ? "border-[#1a3060]" : "border-transparent hover:border-gray-300"
               }`}
             >
-              <ProductImage src={src} alt="" fit="cover" />
+              <ProductImage src={src} alt="" fit="cover" sizes="160px" />
             </button>
           ))}
         </div>

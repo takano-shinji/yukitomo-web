@@ -6,6 +6,8 @@ import JsonLd from "@/app/components/JsonLd";
 import GroupsSection from "@/app/components/GroupsSection";
 import AppBadges from "@/app/components/AppBadges";
 import FaqSection from "@/app/components/FaqSection";
+import PrefectureLinks from "@/app/components/PrefectureLinks";
+import { PREFECTURE_LABEL } from "@/lib/types";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -63,6 +65,12 @@ export default async function Home() {
       </section>
 
       <GroupsSection groups={groups} heroBg={HERO_BG} />
+
+      <PrefectureLinks
+        availableNames={
+          new Set(groups.flatMap((g) => (g.prefectures != null && PREFECTURE_LABEL[g.prefectures] ? [PREFECTURE_LABEL[g.prefectures]] : [])))
+        }
+      />
 
       {/* ご利用の流れ */}
       <section className="py-16 px-6 md:px-12 bg-white">

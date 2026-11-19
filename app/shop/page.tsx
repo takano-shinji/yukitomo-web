@@ -35,43 +35,39 @@ export default async function ShopPage() {
   const PRODUCTS = await getProducts();
   return (
     <main className="flex flex-col">
-      {/* ヒーロー：写真はそのまま見せて、見出しはネイビーのパネルを重ねる */}
-      <section className="relative">
-        <div className="relative w-full overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] bg-gray-100">
-          <Image
-            src="/shop/hero.jpg"
-            alt="新雪のゲレンデと青空"
-            fill
-            priority
-            sizes="100vw"
-            className="shop-hero-zoom absolute inset-0 h-full w-full object-cover [filter:brightness(1.08)_contrast(1.04)_saturate(1.12)]"
-          />
-        </div>
-        <div className="relative z-10 -mt-20 md:-mt-28 mx-4 sm:mx-6 md:mx-auto md:w-full md:max-w-4xl md:px-6">
-          <div className="flex max-w-md flex-col gap-4 rounded-2xl bg-white p-6 shadow-xl shadow-black/20 md:p-8">
-            <h1 className="flex flex-col gap-1">
-              <Image
-                src="/shop/logo.png"
-                alt="yukitomo"
-                width={666}
-                height={375}
-                sizes="224px"
-                className="-mx-2 -my-3 w-48 md:w-56 h-auto"
-              />
-              <span className="text-lg font-bold tracking-wider text-[#1a3060] md:text-xl">
-                オンラインショップ
-              </span>
-            </h1>
-            <p className="text-xs leading-relaxed text-gray-600 md:text-sm">
-              全国一律{formatYen(SHIPPING_FEE)}／{formatYen(FREE_SHIPPING_THRESHOLD)}以上のご購入で送料無料
-            </p>
-            <a
-              href="#products"
-              className={`inline-flex min-h-11 w-fit items-center rounded-lg bg-[#1a3060] px-6 text-sm font-bold text-white transition-colors hover:bg-[#14264d] ${focusRing}`}
-            >
-              商品を見る
-            </a>
-          </div>
+      {/* ヒーロー：写真は背景として全面に敷き、案内カードを中央に重ねる */}
+      <section className="relative flex min-h-[28rem] items-center justify-center overflow-hidden px-4 py-14 md:min-h-[34rem]">
+        <Image
+          src="/shop/hero.jpg"
+          alt="新雪のゲレンデと青空"
+          fill
+          priority
+          sizes="100vw"
+          className="shop-hero-zoom absolute inset-0 h-full w-full object-cover [filter:brightness(1.08)_contrast(1.04)_saturate(1.12)]"
+        />
+        <div className="relative z-10 flex w-full max-w-md flex-col items-center gap-4 rounded-2xl bg-white p-6 text-center shadow-xl shadow-black/20 md:p-8">
+          <h1 className="flex flex-col items-center gap-1">
+            <Image
+              src="/shop/logo.png"
+              alt="yukitomo"
+              width={666}
+              height={375}
+              sizes="224px"
+              className="-my-3 w-48 md:w-56 h-auto"
+            />
+            <span className="text-lg font-bold tracking-wider text-[#1a3060] md:text-xl">
+              オンラインショップ
+            </span>
+          </h1>
+          <p className="text-xs leading-relaxed text-gray-600 md:text-sm">
+            全国一律{formatYen(SHIPPING_FEE)}／{formatYen(FREE_SHIPPING_THRESHOLD)}以上のご購入で送料無料
+          </p>
+          <a
+            href="#products"
+            className={`inline-flex min-h-11 w-fit items-center rounded-lg bg-[#1a3060] px-6 text-sm font-bold text-white transition-colors hover:bg-[#14264d] ${focusRing}`}
+          >
+            商品を見る
+          </a>
         </div>
       </section>
 

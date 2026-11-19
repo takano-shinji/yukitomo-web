@@ -23,7 +23,7 @@ export default function PrefectureLinks({
   if (regions.length === 0) return null;
 
   return (
-    <section className="py-16 px-6 md:px-12 bg-white">
+    <section id="prefectures" className="py-16 px-6 md:px-12 bg-white scroll-mt-14">
       <div className="max-w-2xl mx-auto flex flex-col gap-6">
         <h2 className="text-xl md:text-2xl font-bold text-[#3d3d3d] text-center">{heading}</h2>
         {regions.map((region) => (

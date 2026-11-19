@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/app/components/Header";
+import Footer from "@/app/components/Footer";
 import CleanUrl from "@/app/components/CleanUrl";
 import { HERO_BG, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -44,7 +45,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <CleanUrl />
         <Header />
-        <div className="pt-14">{children}</div>
+        <div className="pt-14 flex-1">{children}</div>
+        <Footer />
       </body>
     </html>
   );

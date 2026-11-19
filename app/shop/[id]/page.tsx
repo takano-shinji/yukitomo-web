@@ -125,6 +125,27 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
+      {(product.features || product.includes) && (
+        <section aria-labelledby="features" className="flex flex-col gap-4 max-w-2xl w-full mx-auto">
+          <h2 id="features" className="text-lg font-bold text-[#3d3d3d]">
+            商品の特長
+          </h2>
+          {product.features && (
+            <ul className="list-disc pl-5 text-sm text-[#3d3d3d] leading-loose">
+              {product.features.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
+          {product.includes && (
+            <p className="text-sm text-[#3d3d3d] leading-loose">
+              <span className="font-bold">付属品：</span>
+              {product.includes.join("、")}
+            </p>
+          )}
+        </section>
+      )}
+
       {product.detailImages?.map((src) => (
         <Image
           key={src}

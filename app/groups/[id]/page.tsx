@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGroup } from "@/lib/api";
-import { LEVEL_RANGE_LABEL, PREFECTURE_LABEL, scheduleLocation } from "@/lib/types";
+import {
+  LEVEL_RANGE_LABEL,
+  PREFECTURE_LABEL,
+  scheduleLocation,
+  type GroupNextScheduleModel,
+} from "@/lib/types";
 import { HERO_BG, SITE_NAME, SITE_URL } from "@/lib/site";
 import JsonLd from "@/app/components/JsonLd";
 import OwnerCta from "./OwnerCta";
@@ -14,6 +19,25 @@ function InfoRow({ label, value }: { label: string; value?: string }) {
     <div className="flex flex-col sm:flex-row sm:gap-4 gap-1">
       <dt className="sm:w-24 shrink-0 text-gray-400">{label}</dt>
       <dd className="text-gray-700">{value}</dd>
+    </div>
+  );
+}
+
+const SCHEDULE_VISIBLE = 5;
+
+function ScheduleRow({ item }: { item: GroupNextScheduleModel }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-sm">
+      <div className="sm:w-24 shrink-0 text-gray-400">
+        {item.startDate}
+        {item.endDate && item.endDate !== item.startDate && (
+          <span className="block">〜 {item.endDate}</span>
+        )}
+      </div>
+      <div>
+        <p className="font-medium text-gray-700">{item.eventName}</p>
+        <p className="text-gray-400">{scheduleLocation(item)}</p>
+      </div>
     </div>
   );
 }
@@ -188,20 +212,25 @@ export default async function GroupPage({
             <p className="text-sm text-gray-400">予定はありません</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {group.scheduleList.map((item) => (
-                <div key={item.id} className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-sm">
-                  <div className="sm:w-24 shrink-0 text-gray-400">
-                    {item.startDate}
-                    {item.endDate && item.endDate !== item.startDate && (
-                      <span className="block">〜 {item.endDate}</span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-700">{item.eventName}</p>
-                    <p className="text-gray-400">{scheduleLocation(item)}</p>
-                  </div>
-                </div>
+              {group.scheduleList.slice(0, SCHEDULE_VISIBLE).map((item) => (
+                <ScheduleRow key={item.id} item={item} />
               ))}
+              {group.scheduleList.length > SCHEDULE_VISIBLE && (
+                // 折りたたんだ予定もHTMLには残るので、検索エンジンからは全件読める
+                <details className="group flex flex-col gap-4">
+                  <summary className="cursor-pointer list-none text-sm font-medium text-center py-2 rounded-lg bg-gray-50 text-[#1a3060] hover:bg-gray-100">
+                    <span className="group-open:hidden">
+                      残り{group.scheduleList.length - SCHEDULE_VISIBLE}件の予定を表示
+                    </span>
+                    <span className="hidden group-open:inline">閉じる</span>
+                  </summary>
+                  <div className="flex flex-col gap-4 mt-4">
+                    {group.scheduleList.slice(SCHEDULE_VISIBLE).map((item) => (
+                      <ScheduleRow key={item.id} item={item} />
+                    ))}
+                  </div>
+                </details>
+              )}
             </div>
           )}
         </section>

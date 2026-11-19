@@ -10,6 +10,7 @@ import {
 } from "@/lib/types";
 import { HERO_BG, SITE_NAME, SITE_URL } from "@/lib/site";
 import JsonLd from "@/app/components/JsonLd";
+import { prefecturePath } from "@/lib/prefectures";
 import OwnerCta from "./OwnerCta";
 import AppBadges from "@/app/components/AppBadges";
 
@@ -99,6 +100,16 @@ export default async function GroupPage({
   const coverImage = group.coverImageUrl ?? group.galleryImages[0]?.imageURL;
   const prefectureName = group.prefectures != null ? PREFECTURE_LABEL[group.prefectures] : undefined;
   const levelLabel = group.levelRange != null ? LEVEL_RANGE_LABEL[group.levelRange] : undefined;
+  const prefectureHref = group.prefectures != null ? prefecturePath(group.prefectures) : undefined;
+
+  // トップ → 都道府県ページ → グループ の順。都道府県が不明なら2階層にする
+  const breadcrumb = [
+    { name: SITE_NAME, url: SITE_URL },
+    ...(prefectureName && prefectureHref
+      ? [{ name: `${prefectureName}のスキー・スノボサークル`, url: `${SITE_URL}${prefectureHref}` }]
+      : []),
+    { name: group.groupName, url: `${SITE_URL}/groups/${group.groupId}` },
+  ];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -115,10 +126,12 @@ export default async function GroupPage({
       },
       {
         "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: group.groupName, item: `${SITE_URL}/groups/${group.groupId}` },
-        ],
+        itemListElement: breadcrumb.map((b, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: b.name,
+          item: b.url,
+        })),
       },
     ],
   };
@@ -164,13 +177,35 @@ export default async function GroupPage({
             )}
             <div className="min-w-0">
               <h1 className="text-xl md:text-3xl font-bold text-[#1a1a1a] break-words">{group.groupName}</h1>
-              {prefectureName && <p className="text-sm md:text-base text-gray-500 mt-1">{prefectureName}</p>}
+              {prefectureName &&
+                (prefectureHref ? (
+                  <Link href={prefectureHref} className="inline-block text-sm md:text-base text-gray-500 mt-1 hover:underline">
+                    {prefectureName}
+                  </Link>
+                ) : (
+                  <p className="text-sm md:text-base text-gray-500 mt-1">{prefectureName}</p>
+                ))}
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
+        <nav aria-label="パンくずリスト" className="text-xs text-gray-400 -mb-2">
+          <Link href="/" className="hover:underline">
+            {SITE_NAME}
+          </Link>
+          {prefectureName && prefectureHref && (
+            <>
+              <span className="mx-2">›</span>
+              <Link href={prefectureHref} className="hover:underline">
+                {prefectureName}
+              </Link>
+            </>
+          )}
+          <span className="mx-2">›</span>
+          <span>{group.groupName}</span>
+        </nav>
 
         {/* 募集文 */}
         {group.recruitmentMessage && (

@@ -4,12 +4,15 @@ import Link from "next/link";
 import { CATEGORY_LABEL, hasOptions, mainImage, type Product } from "@/lib/shop/products";
 import { getProducts } from "@/lib/shop/catalog";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, formatYen } from "@/lib/shop/shipping";
+import { BRANDS, brandSlug } from "@/lib/shop/brands";
 import ProductImage from "./ProductImage";
 import { focusRing } from "./ui";
 
+const BRAND_NAMES = BRANDS.join("・");
+
 export const metadata: Metadata = {
-  title: "ショップ",
-  description: "雪ともオンラインショップ。選手の活動を支える応援アイテム。",
+  title: `${BRAND_NAMES} ゴーグル・交換用パーツの通販（オンラインショップ）`,
+  description: `雪ともオンラインショップ。${BRAND_NAMES} のフリップアップゴーグルと交換用パーツを販売。全国一律${formatYen(SHIPPING_FEE)}、${formatYen(FREE_SHIPPING_THRESHOLD)}以上のご購入で送料無料。`,
   alternates: { canonical: "/shop" },
 };
 
@@ -113,6 +116,19 @@ export default async function ShopPage() {
           );
         })}
       </section>
+
+      <nav aria-label="ブランドから探す" className="text-sm text-gray-600">
+        ブランドから探す：
+        {BRANDS.map((b) => (
+          <Link
+            key={b}
+            href={`/shop/brand/${brandSlug(b)}`}
+            className={`font-bold text-[#1a3060] underline-offset-2 hover:underline ${focusRing}`}
+          >
+            {b}
+          </Link>
+        ))}
+      </nav>
       </div>
     </main>
   );

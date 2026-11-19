@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL, PRODUCTS } from "@/lib/shop/products";
 import { getProductById } from "@/lib/shop/catalog";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
+import JsonLd from "@/app/components/JsonLd";
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE, formatYen } from "@/lib/shop/shipping";
 import Gallery from "./Gallery";
 import { focusRing } from "../ui";
@@ -25,6 +27,16 @@ export async function generateMetadata({
     title: product.name,
     description: product.summary,
     alternates: { canonical: `/shop/${product.id}` },
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      locale: "ja_JP",
+      title: product.name,
+      description: product.summary,
+      url: `/shop/${product.id}`,
+      images: product.images?.slice(0, 1),
+    },
+    twitter: { card: "summary_large_image", title: product.name, description: product.summary },
   };
 }
 
@@ -36,8 +48,43 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const product = await getProductById(id);
   if (!product) notFound();
 
+  const productUrl = `${SITE_URL}/shop/${product.id}`;
+  const inStock = product.variants.some((v) => v.stock > 0);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${productUrl}#product`,
+        name: product.name,
+        description: product.description,
+        image: product.images?.map((src) => (src.startsWith("/") ? `${SITE_URL}${src}` : src)),
+        sku: product.id,
+        brand: { "@type": "Brand", name: product.brand },
+        category: CATEGORY_LABEL[product.category],
+        offers: {
+          "@type": "Offer",
+          url: productUrl,
+          priceCurrency: "JPY",
+          price: product.price,
+          itemCondition: "https://schema.org/NewCondition",
+          availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "ショップ", item: `${SITE_URL}/shop` },
+          { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="max-w-5xl mx-auto px-6 py-8 md:py-12 flex flex-col gap-8 md:gap-12">
+      <JsonLd data={jsonLd} />
       <nav aria-label="パンくず" className="text-xs text-gray-500">
         <Link href="/shop" className={`hover:text-[#1a3060] ${focusRing}`}>
           ショップ

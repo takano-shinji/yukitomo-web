@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { searchGroups } from "@/lib/api";
 import { SITE_URL } from "@/lib/site";
 import { prefecturePath } from "@/lib/prefectures";
+import { PRODUCTS } from "@/lib/shop/products";
+import { BRANDS, brandSlug } from "@/lib/shop/brands";
 
 export const dynamic = "force-dynamic";
 
@@ -26,5 +28,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return path ? [{ url: `${SITE_URL}${path}` }] : [];
     }),
     ...groupIds.map((id) => ({ url: `${SITE_URL}/groups/${id}` })),
+    // ショップ。カート・注文完了ページは検索に出さないので載せない
+    { url: `${SITE_URL}/shop` },
+    ...BRANDS.map((b) => ({ url: `${SITE_URL}/shop/brand/${brandSlug(b)}` })),
+    ...PRODUCTS.map((p) => ({ url: `${SITE_URL}/shop/${p.id}` })),
+    { url: `${SITE_URL}/shop/tokushoho` },
+    { url: `${SITE_URL}/privacy` },
   ];
 }

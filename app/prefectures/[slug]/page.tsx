@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { searchGroups } from "@/lib/api";
+import { searchAllGroups, searchGroups } from "@/lib/api";
 import { PREFECTURE_LIST, prefectureBySlug } from "@/lib/prefectures";
-import { scheduleLocation, type GroupSearchModel } from "@/lib/types";
+import { PREFECTURE_LABEL, scheduleLocation, type GroupSearchModel } from "@/lib/types";
 import { HERO_BG, SITE_NAME, SITE_URL } from "@/lib/site";
 import JsonLd from "@/app/components/JsonLd";
 import AppBadges from "@/app/components/AppBadges";
@@ -67,7 +67,10 @@ export default async function PrefecturePage({
   const pref = prefectureBySlug(slug);
   if (!pref) notFound();
 
-  const groups = await loadGroups(pref.code);
+  const [groups, allGroups] = await Promise.all([loadGroups(pref.code), searchAllGroups()]);
+  const namesWithGroups = new Set(
+    allGroups.flatMap((g) => (g.prefectures != null && PREFECTURE_LABEL[g.prefectures] ? [PREFECTURE_LABEL[g.prefectures]] : []))
+  );
   const pageUrl = `${SITE_URL}/prefectures/${pref.slug}`;
 
   const jsonLd = {
@@ -174,7 +177,12 @@ export default async function PrefecturePage({
         </div>
       </section>
 
-      <PrefectureLinks currentSlug={pref.slug} heading="ほかの都道府県から探す" />
+      <PrefectureLinks
+        currentSlug={pref.slug}
+        availableNames={namesWithGroups}
+        showEmpty
+        heading="ほかの都道府県から探す"
+      />
     </main>
   );
 }

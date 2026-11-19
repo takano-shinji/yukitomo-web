@@ -44,3 +44,16 @@ export const getGroup = cache(async (id: string): Promise<WebGroupDetailModel | 
     return null;
   }
 });
+
+/** 公開グループを全件取得する（ページを順に辿る）。 */
+export async function searchAllGroups(): Promise<GroupSearchModel[]> {
+  const pageSize = 100;
+  const maxPages = 50;
+  const all: GroupSearchModel[] = [];
+  for (let page = 0; page < maxPages; page++) {
+    const batch = await searchGroups({ limit: pageSize, offset: page * pageSize });
+    all.push(...batch);
+    if (batch.length < pageSize) break;
+  }
+  return all;
+}

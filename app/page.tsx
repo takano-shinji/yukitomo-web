@@ -72,6 +72,45 @@ export default async function Home() {
         }
       />
 
+      {/* 雪ともとは（サービス紹介の本文） */}
+      <section className="py-16 px-6 md:px-12 bg-gray-50">
+        <div className="max-w-2xl mx-auto flex flex-col gap-8">
+          <h2 className="text-xl md:text-2xl font-bold text-[#3d3d3d] text-center leading-relaxed">
+            スキー・スノボ仲間が見つかる
+            <br className="md:hidden" />
+            「雪とも」とは
+          </h2>
+          <div className="flex flex-col gap-4 text-sm md:text-base text-[#3d3d3d] leading-loose">
+            <p>
+              「雪とも」は、全国のスキー・スノーボードのサークル、クラブチームと、一緒に滑る仲間を探している人をつなぐサービスです。
+              一人で滑るのも楽しいけれど、仲間と滑ればもっと楽しい。そんな思いから、グループ探しをもっと気軽にしました。
+            </p>
+            <p>
+              グループは、所在地（都道府県）やレベルで探せます。「初心者歓迎」「オールレベル」「中上級者中心」といったレベルの目安や、
+              活動場所、次のスケジュールをグループごとに確認できるので、自分のペースやホームゲレンデに合った仲間が見つかります。
+              スキーでもスノーボードでも使えます。
+            </p>
+            <p>
+              気になるグループが見つかったら、アプリからオーナーにメッセージを送って参加申請。
+              アプリのダウンロード、グループの閲覧、メッセージの送信まで、基本機能は無料で使えます。
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm flex flex-col gap-3">
+            <h3 className="font-bold text-[#1a1a1a]">こんな方におすすめです</h3>
+            <ul className="list-disc pl-5 text-sm text-[#3d3d3d] leading-loose">
+              <li>一緒に滑る仲間がいなくて、一人でゲレンデに行くことが多い方</li>
+              <li>初心者でも気軽に参加できるサークルを探している方</li>
+              <li>ホームゲレンデが同じ、近い仲間を見つけたい方</li>
+              <li>スキー・スノボの仲間を募集したい、サークルやチームのオーナーの方</li>
+            </ul>
+            <a href="#groups" className="text-sm font-bold text-[#1a3060] hover:underline w-fit">
+              グループを探す →
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ご利用の流れ */}
       <section className="py-16 px-6 md:px-12 bg-white">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-10">

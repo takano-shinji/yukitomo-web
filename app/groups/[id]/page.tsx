@@ -14,6 +14,9 @@ import { prefecturePath } from "@/lib/prefectures";
 import OwnerCta from "./OwnerCta";
 import AppBadges from "@/app/components/AppBadges";
 
+/** 新しく作られたグループが60秒ほどで反映されるよう、ページ自体も60秒ごとに作り直す */
+export const revalidate = 60;
+
 function InfoRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (

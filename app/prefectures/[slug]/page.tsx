@@ -10,6 +10,8 @@ import AppBadges from "@/app/components/AppBadges";
 import PrefectureLinks from "@/app/components/PrefectureLinks";
 
 export const dynamicParams = false;
+/** 新しく作られたグループが60秒ほどで反映されるよう、ページ自体も60秒ごとに作り直す */
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return PREFECTURE_LIST.map((p) => ({ slug: p.slug }));

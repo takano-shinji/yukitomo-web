@@ -9,6 +9,9 @@ import FaqSection from "@/app/components/FaqSection";
 import PrefectureLinks from "@/app/components/PrefectureLinks";
 import { PREFECTURE_LABEL } from "@/lib/types";
 
+/** 新しく作られたグループが60秒ほどで反映されるよう、ページ自体も60秒ごとに作り直す */
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
